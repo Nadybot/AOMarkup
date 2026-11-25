@@ -6,7 +6,7 @@ use function Safe\{file_get_contents, glob, preg_replace};
 
 use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
 use AO\Markup\Exceptions\NotImplementedException;
-use AO\Markup\Export\{AnsiExporter, AomlExporter, DiscordExporter, Exporter, HtmlExporter, LePanelExporter, PlainExporter};
+use AO\Markup\Export\{AnsiExporter, AomlExporter, BbmlExporter, DiscordExporter, Exporter, HtmlExporter, LePanelExporter, PlainExporter};
 use AO\Markup\Parser\AoXmlParser;
 use AO\Markup\Tests\Support\AnsiNotation;
 use AO\Markup\Widget\WidgetRegistry;
@@ -31,6 +31,7 @@ final class SamplesTest extends TestCase {
 	public static function exporters(): array {
 		return [
 			'aoml' => new AomlExporter(),
+			'bbml' => new BbmlExporter(),
 			'lepanel' => new LePanelExporter(),
 			'ansi' => new AnsiExporter(),
 			'txt' => new PlainExporter(),
@@ -75,7 +76,7 @@ final class SamplesTest extends TestCase {
 		$samples = glob(self::SAMPLE_DIR . '/*', GLOB_ONLYDIR);
 		$this->assertNotEmpty($samples);
 		foreach ($samples as $dir) {
-			foreach (['legacy.aoml', 'input.aoxml', ...array_map(static fn (string $e): string => "expected.{$e}", array_keys(self::exporters()))] as $file) {
+			foreach (['legacy.bbml', 'input.aoxml', ...array_map(static fn (string $e): string => "expected.{$e}", array_keys(self::exporters()))] as $file) {
 				$this->assertFileExists("{$dir}/{$file}");
 			}
 			$this->assertJson(file_get_contents("{$dir}/expected.discord.json"));

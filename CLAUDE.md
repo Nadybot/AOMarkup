@@ -3,7 +3,7 @@
 AOMarkup (`nadybot/aomarkup`, namespace `AO\Markup`, AGPL-3.0-or-later) is a bot-agnostic
 library: it parses **AoXML** into a document tree and exports it to AOML (official client),
 lepanel (Lost Eden), ANSI, plain text, HTML and Discord. Its first consumer is Nadybot
-(`~/bot/Nadybot`), which today converts its AOML+ with regexes in five places
+(`~/bot/Nadybot`), which today converts its BBML with regexes in five places
 (`Core/Text.php`, `Core/Blob.php`, `CONSOLE/ConsoleCommandReply.php`,
 `WEBSERVER_MODULE/WebChatConverter.php`, `DISCORD/DiscordController.php`).
 Sister package: `nadybot/aolib` (namespace `AO\`, the chat client).
@@ -23,7 +23,13 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - Game objects are semantic elements (`<item>`, `<nano>`, `<skill>`, `<char>`, `<cmd>`, `<url>`).
 - Popups are hoisted into separate windows (`Document::$windows`), like the format Nadybot
   already sends to its web client; `<a href="text://…">` is legacy input only.
-- Legacy AOML+ is read by `LegacyAomlImporter`, not by `AoXmlParser`.
+- BBML (Budabot markup: `<highlight>`, `<end>`, `<tab>`, …) is not AOML. Funcom AOML is a
+  subset of BBML; both are read by `BbmlImporter`, not by `AoXmlParser`. Colours are never
+  guessed back into semantic styles.
+- Export targets for the game: `AomlExporter` (colours resolved; client and foreign relays such as
+  GrcV2) and `BbmlExporter` (named styles kept, placeholders resolved; relays to bots that
+  apply their own theme, e.g. NadyNative to older Nadybots).
+- Relays never carry lepanel markup.
 - Importers never produce widgets.
 - Boolean attributes: `<table border>` is allowed as input; canonical form is `border="true"`.
 - Table alignment: `<th align>` is the default for its column, `<td align>` overrides it.
@@ -45,11 +51,10 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   `<table>` (layout vs. border), `<ul>`/`<ol>`, `<stat>` with static `value`/`unit`,
   `<bar>` with labels and marker, named windows that are reused (with back/forward), and later
   replies into the window a command was clicked in (request id round trip).
-- Relays between bots on different servers must only carry Funcom AOML (or AoXML).
 
 ## Conventions
 - Code, comments, docs and commit messages in English.
 - Never add a `Co-Authored-By` trailer to commit messages.
 - Checks: `composer tests` (PHPUnit, PHPStan level 8, phpcs, mago if installed);
   style via `vendor/bin/php-cs-fixer.phar fix`.
-- `bin/show-sample <sample> [ansi|txt|aoml|lepanel|html|discord.json|aoxml]` shows a sample.
+- `bin/show-sample <sample> [ansi|txt|aoml|bbml|lepanel|html|discord.json|aoxml|legacy]` shows a sample.

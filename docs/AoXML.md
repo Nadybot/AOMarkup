@@ -140,8 +140,15 @@ Widgets are registered elements with a mandatory fallback to core elements, see
 | `<unavailable/>` | | Marks something as not available in game. |
 | `<param>` | | A command parameter inside `<syntax>`, e.g. `<param>attack time</param>`. |
 
-## 6. Legacy AOML+
-Nadybot/Budabot-style markup (`<highlight>…<end>`, `<tab>`, `<header2>`, `<font color=…>`,
-`<a href="text://…">`, `itemref://`, `chatcmd://`, …) is **not** AoXML. It is read by the
-`LegacyAomlImporter`, which produces the same document tree. See the `legacy.aoml`
-files in `tests/Samples` for what it has to understand.
+## 6. BBML
+BBML, the Budabot markup language (`<highlight>…<end>`, `<tab>`, `<header2>`, `<myname>`,
+`<a href="text://…">`, `itemref://`, `chatcmd://`, …), is what Budabot and Nadybot write today.
+It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like `<font>`,
+`<a>`, `<u>`, `<i>` and `<img>`, and is a subset of BBML.
+
+- **Import:** `BbmlImporter` reads BBML and therefore plain AOML too, and produces the same
+  document tree. Colours (`<font color=…>`) stay colours; they are never guessed back into
+  semantic styles. See the `legacy.bbml` files in `tests/Samples` for what it has to understand.
+- **Export:** `BbmlExporter` writes BBML for relays: named styles stay named, so the receiving
+  bot applies its own theme, while placeholders are resolved, since the receiver would fill in
+  its own name. `AomlExporter` writes Funcom AOML with all colours resolved.

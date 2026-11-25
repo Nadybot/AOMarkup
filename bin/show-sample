@@ -11,11 +11,15 @@ $sample = $argv[1] ?? null;
 $format = $argv[2] ?? 'ansi';
 $dir = __DIR__ . '/../tests/Samples';
 if ($sample === null) {
-	fwrite(STDERR, "Usage: {$argv[0]} <sample> [ansi|txt|aoml|lepanel|html|discord.json|aoxml]\n");
+	fwrite(STDERR, "Usage: {$argv[0]} <sample> [ansi|txt|aoml|bbml|lepanel|html|discord.json|aoxml|legacy]\n");
 	fwrite(STDERR, 'Samples: ' . implode(', ', array_map('basename', glob("{$dir}/*", GLOB_ONLYDIR) ?: [])) . "\n");
 	exit(1);
 }
-$file = $format === 'aoxml' ? "{$dir}/{$sample}/input.aoxml" : "{$dir}/{$sample}/expected.{$format}";
+$file = match ($format) {
+	'aoxml' => "{$dir}/{$sample}/input.aoxml",
+	'legacy' => "{$dir}/{$sample}/legacy.bbml",
+	default => "{$dir}/{$sample}/expected.{$format}",
+};
 $content = file_get_contents($file);
 if ($content === false) {
 	fwrite(STDERR, "Cannot read {$file}\n");

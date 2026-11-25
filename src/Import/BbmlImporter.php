@@ -6,8 +6,13 @@ use AO\Markup\Document;
 use AO\Markup\Exceptions\NotImplementedException;
 use Psr\Log\{LoggerInterface, NullLogger};
 
-/** Reads Nadybot/Budabot-style AOML+ (<highlight>…<end>, <tab>, text:// popups, …) and plain AOML */
-final class LegacyAomlImporter implements Importer {
+/**
+ * Reads BBML, the Budabot markup language (<highlight>…<end>, <tab>, text:// popups, …)
+ *
+ * Funcom AOML is a subset of BBML, so plain AOML is read as well: <font color> becomes a
+ * Color node, colours are never guessed back into semantic styles.
+ */
+final class BbmlImporter implements Importer {
 	public function __construct(
 		private LoggerInterface $logger=new NullLogger(),
 	) {

@@ -5,8 +5,8 @@
  AoXML ────►│ AoXmlParser  │──┐
             └──────────────┘  │
             ┌──────────────┐  │     ┌──────────┐    ┌──────────────┐    ┌───────────┐
- AOML+ ────►│ LegacyAoml-  │──┼────►│ Document │───►│ Transformers │───►│ Exporters │──► string
-            │ Importer     │  │     │  (AST)   │    │ (AST → AST)  │    └───────────┘
+ BBML ─────►│ BbmlImporter │──┼────►│ Document │───►│ Transformers │───►│ Exporters │──► string
+            │ (+ AOML)     │  │     │  (AST)   │    │ (AST → AST)  │    └───────────┘
             └──────────────┘  │     └──────────┘    └──────────────┘
             ┌──────────────┐  │          ▲
  Markdown ─►│ Markdown-    │──┘          │
@@ -57,6 +57,7 @@ Pure `Document → Document` steps, combined per exporter:
 | Exporter | Target |
 |---|---|
 | `AomlExporter` | AOML for the official (Funcom) client; tables and fields are aligned with spaces using `AoFontMetric` |
+| `BbmlExporter` | BBML for relays: like AOML, but named styles stay (`<highlight>…<end>`) so the receiver applies its theme |
 | `LePanelExporter` | AOML with `lepanel://v1/` windows for Lost Eden (draft) |
 | `AnsiExporter` | Terminals: 24-bit colours, OSC 8 hyperlinks, monospace tables |
 | `PlainExporter` | Plain UTF-8 text, monospace tables |

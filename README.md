@@ -7,14 +7,15 @@ contains (sections, key/value fields, tables, lists, items, commands, …) rathe
 *how* it looks. Exporters then render the same document for every target:
 
 - AOML for the official Anarchy Online client
+- BBML (Budabot markup) for relays to bots that apply their own colours
 - AOML with `lepanel://` windows for the Lost Eden private server
 - ANSI terminals
 - plain text
 - HTML
 - Discord
 
-Legacy Nadybot/Budabot markup (`<highlight>…<end>`, `<tab>`, `text://` popups, …) and
-Markdown can be imported into the same document tree.
+BBML, the Budabot/Nadybot markup (`<highlight>…<end>`, `<tab>`, `text://` popups, …), plain
+AOML and Markdown can be imported into the same document tree.
 
 > **Status:** skeleton. The language and the expected outputs are being designed; most
 > classes are stubs. See `tests/Samples` for what the output is supposed to look like.

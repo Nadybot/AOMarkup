@@ -14,9 +14,10 @@ Every directory is one real Nadybot command output:
 
 | File | Content |
 |---|---|
-| `legacy.aoml` | What Nadybot's code produces today (AOML+, before colours are resolved) |
+| `legacy.bbml` | What Nadybot's code produces today (BBML, before colours are resolved) |
 | `input.aoxml` | The same output written in AoXML |
 | `expected.aoml` | `AomlExporter` (official client) |
+| `expected.bbml` | `BbmlExporter` (relays) |
 | `expected.lepanel` | `LePanelExporter` (Lost Eden). **Speculative**: uses tags we asked the Lost Eden devs for (`<table>`, `<ul>`, `<stat value unit>`, `<bar left right marker>`) |
 | `expected.ansi` | `AnsiExporter`, in ANSI notation (see below) |
 | `expected.txt` | `PlainExporter` |
@@ -69,6 +70,14 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - `<match>`: red brackets around the content, `<selected>`: yellow brackets.
 - `<syntax>`: highlighted, with the command prefix.
 - `<slider>`: the widget fallback (`l` bars, red `│` marker, marker text centred below it).
+
+### BBML (relays)
+- Same layout as AOML (same metric, same padding).
+- Theme colours become their BBML names, closed with `<end>`: `<header>`, `<header2>`,
+  `<highlight>`, `<green>`, `<neutral>`, … `<syntax>` becomes `<highlight>`, explicit `<color>`
+  stays `<font color=…>…</font>`.
+- No window colour: the receiving bot adds its own.
+- Placeholders are resolved (`/tell Nadybot !help`), since the receiver would fill in its own name.
 
 ### ANSI / plain text
 - Monospace alignment (`MonospaceMetric`).

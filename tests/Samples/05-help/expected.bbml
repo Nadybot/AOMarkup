@@ -1,0 +1,15 @@
+<a href="text://<header>Help (aggdef)<end>
+
+<header2>'aggdef' command<end>
+    Find out where to set your aggdef slider to be 1/1
+    <highlight>!aggdef &lt;attack time&gt; &lt;recharge time&gt; &lt;init value&gt;<end>
+
+If you are lazy, just use
+    <highlight>!weapon &lt;drop weapon into chat&gt;<end>
+
+Example:
+    Your weapon has an attack time of <highlight>1.2<end> seconds and a recharge time of <highlight>1.5<end> seconds.
+    Your melee/ranged init is <highlight>1200<end>:
+    <a href='chatcmd:///tell Nadybot !aggdef 1.2 1.5 1200'>/tell Nadybot !aggdef 1.2 1.5 1200</a>
+
+<i>See <a href='chatcmd:///tell Nadybot !help syntax'>!help syntax</a> for an explanation of the command syntax</i>">Help (aggdef)</a>
