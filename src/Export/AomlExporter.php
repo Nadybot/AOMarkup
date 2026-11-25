@@ -9,6 +9,12 @@ use AO\Markup\Metric\{AoFontMetric, TextMetric};
 
 /** AOML for the official Anarchy Online client; tables and fields are aligned with spaces */
 final class AomlExporter extends BaseExporter {
+	/** @param string $bullet Prefix of unordered list items, followed by a space */
+	public function __construct(
+		public readonly string $bullet='-',
+	) {
+	}
+
 	public function export(Document $document, RenderContext $context): string {
 		throw NotImplementedException::for(self::class);
 	}

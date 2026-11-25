@@ -1,6 +1,6 @@
 <popup title="History of Pigtail for RK1 (Atlantean)">
-	<table border columns="left,right,right,left,left,left">
-		<tr><th>Date</th><th>Level</th><th>AI</th><th>Faction</th><th>Breed</th><th>Guild (rank)</th></tr>
+	<table border>
+		<tr><th>Date</th><th align="right">Level</th><th align="right">AI</th><th>Faction</th><th>Breed</th><th>Guild (rank)</th></tr>
 		<tr>
 			<td>2010-02-24</td><td>195</td><td><green>0</green></td>
 			<td><neutral>Neutral</neutral></td><td>Atrox</td><td>Wolf Brigade (<highlight>Applicant</highlight>)</td>

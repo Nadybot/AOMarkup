@@ -14,7 +14,9 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 - Void elements are written as `<slider … />`. Known void elements
   (`<br>`, `<hr>`, `<myname>`, `<myguild>`, `<symbol>`, `<pagebreak>`) may omit the slash.
 - Attribute values are quoted with `"` or `'`. Boolean attributes may be written without a
-  value: `<table border>` is the same as `<table border="border">`.
+  value: `<table border>` is the same as `<table border="true">`. `"true"` and `"false"`
+  are the canonical values; the serializer always writes them. An unquoted value
+  (`border=true`) is accepted with a warning.
 - `<`, `>` and `&` in text are written as `&lt;`, `&gt;` and `&amp;`. A bare `&` that
   does not start an entity is accepted as text, with a warning.
 - Unknown elements are kept as text and logged as a warning; the parser never throws
@@ -36,9 +38,9 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 |---|---|---|
 | `<section>` | `title` | A titled block. Replaces `<header2>` + `<tab>`-indented lines. Preferred page-break position; kept together when possible. |
 | `<field>` | `name`, `unit`? | A key/value line. Consecutive fields form an aligned group. The value is highlighted; `unit` follows it unhighlighted. If all values of a group are numeric, they are right-aligned. |
-| `<table>` | `border`?, `columns`? | A table. Without `border` it is a pure layout table. `columns` is a comma separated list of `left`, `right`, `center` per column. |
+| `<table>` | `border`? | A table. Without `border` it is a pure layout table. |
 | `<tr>` | | A row. |
-| `<th>`, `<td>` | `align`?, `colspan`? | Header and data cells. Rows made only of `<th>` are repeated on every page. |
+| `<th>`, `<td>` | `align`?, `colspan`? | Header and data cells. `align` is `left`, `right` or `center`, see [2.1](#21-table-alignment). Rows made only of `<th>` are repeated on every page. |
 | `<ul>`, `<ol>` | `start`? (ol) | Unordered and ordered lists. Lists can be nested. |
 | `<li>` | `icon`? | A list item. `icon` is an image reference (`rdb:12345`, `tdb:GFX_…`). |
 | `<indent>` | | Indent its content by one level. |
@@ -48,6 +50,24 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 | `<pagebreak/>` | | Start a new page here, if the target paginates. |
 | `<keep>` | | Never split this content across pages. |
 | `<repeat>` | | Repeat this content at the top of every page of the current popup. |
+
+### 2.1 Table alignment
+The `align` of a `<th>` is the default alignment of the cells below it in the same
+column; a `<td align>` overrides it for that cell.
+
+```xml
+<table border>
+	<tr><th>Date</th><th align="right">Level</th></tr>
+	<tr><td>2010-02-24</td><td>195</td></tr>               <!-- 195 is right-aligned -->
+	<tr><td>2010-02-25</td><td align="left">n/a</td></tr>  <!-- n/a is left-aligned -->
+</table>
+```
+
+- Only a `<th>` without `colspan` sets a column default. A `<th colspan>` only aligns itself.
+- With several header rows, a column takes the `align` of the last `<th>` above the cell
+  that has one.
+- A cell with `colspan` does not inherit; it is `left` unless it has its own `align`.
+- Everything else is `left`, in particular every cell of a table without `<th>`.
 
 ## 3. Inline elements
 
@@ -69,7 +89,7 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 ### 3.3 Game objects and links
 | Element | Attributes | Meaning |
 |---|---|---|
-| `<item>` | `lowid`, `highid`, `ql` (or `ref="low/high/ql"`) | An item. Content = link text. |
+| `<item>` | `id`, `ql` | An item. `id` is `lowid/highid`, or just `id` if both are the same. `ql` is required; if it is missing or invalid, a warning is logged and QL 1 is used. Content = link text. |
 | `<nano>` | `id` | A nano program. |
 | `<skill>` | `id` | A skill. |
 | `<char>` | `name` | A character. Empty content = name. |

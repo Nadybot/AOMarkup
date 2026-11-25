@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Widget\Builtin;
 
+use AO\Markup\Metric\TextMetric;
 use AO\Markup\Node\{LineBreak, Node, Paragraph, Style, StyleName, Text};
 use AO\Markup\Widget\{AsWidget, ExpansionContext, Widget};
 
@@ -11,11 +12,17 @@ use AO\Markup\Widget\{AsWidget, ExpansionContext, Widget};
  * Fallback:
  *   <left> <green>|||||</green><red>│</red><green>|||</green> <right>
  *                       <marker>
+ *
+ * The bar uses the narrower of `l` and `|` in the target's metric (`l` in the
+ * AO font, where it is 4 px instead of 6), and `|` if both are equally wide.
  */
 #[AsWidget('slider')]
 final class Slider implements Widget {
 	/** Number of bar characters */
 	public const LENGTH = 50;
+
+	/** Candidates for the bar character, preferred first */
+	private const BAR_CHARS = ['|', 'l'];
 
 	public function __construct(
 		public readonly float $pos,
@@ -33,8 +40,9 @@ final class Slider implements Widget {
 		$markerPos = (int)round(max(0.0, min(1.0, $ratio)) * (self::LENGTH - 1));
 
 		$prefix = isset($this->left) ? "{$this->left} " : '';
-		$leftBar = str_repeat('|', $markerPos);
-		$rightBar = str_repeat('|', self::LENGTH - 1 - $markerPos);
+		$barChar = self::barChar($ctx->metric);
+		$leftBar = str_repeat($barChar, $markerPos);
+		$rightBar = str_repeat($barChar, self::LENGTH - 1 - $markerPos);
 
 		$bar = [];
 		if ($prefix !== '') {
@@ -67,5 +75,16 @@ final class Slider implements Widget {
 				new Text(str_repeat(' ', $spaces) . $this->marker),
 			]
 		);
+	}
+
+	/** The narrowest bar character in this metric; earlier candidates win ties */
+	private static function barChar(TextMetric $metric): string {
+		$best = self::BAR_CHARS[0];
+		foreach (self::BAR_CHARS as $char) {
+			if ($metric->width($char) < $metric->width($best)) {
+				$best = $char;
+			}
+		}
+		return $best;
 	}
 }

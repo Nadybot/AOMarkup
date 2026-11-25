@@ -3,7 +3,7 @@
 namespace AO\Markup\Tests\Widget;
 
 use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
-use AO\Markup\Metric\MonospaceMetric;
+use AO\Markup\Metric\{AoFontMetric, MonospaceMetric};
 use AO\Markup\Node\{LineBreak, Node, Paragraph, Style, Text};
 use AO\Markup\Widget\Builtin\{Param, Slider, Unavailable};
 use AO\Markup\Widget\{ExpansionContext, WidgetRegistry};
@@ -24,6 +24,16 @@ final class WidgetTest extends TestCase {
 		$this->assertSame(
 			'1170 DEF ' . str_repeat('|', 36) . '│' . str_repeat('|', 13) . " AGG 135\n"
 			. str_repeat(' ', 41) . 'You: 300',
+			self::plain($slider->fallback($ctx))
+		);
+	}
+
+	public function testSliderUsesNarrowBarInAoFont(): void {
+		$ctx = new ExpansionContext(new RenderContext(new ArrayPlaceholderProvider([])), new AoFontMetric());
+		$slider = new Slider(pos: 73, left: '1170 DEF', right: 'AGG 135', marker: 'You: 300');
+		$this->assertSame(
+			'1170 DEF ' . str_repeat('l', 36) . '│' . str_repeat('l', 13) . " AGG 135\n"
+			. str_repeat(' ', 37) . 'You: 300',
 			self::plain($slider->fallback($ctx))
 		);
 	}

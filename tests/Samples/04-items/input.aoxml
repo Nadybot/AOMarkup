@@ -1,10 +1,10 @@
 <popup title="Item Search Results (3)">
 	<ul>
-		<li><item ref="247115/247115/1">Basic First Aid Kit</item> (QL 1)</li>
+		<li><item id="247115" ql="1">Basic First Aid Kit</item> (QL 1)</li>
 		<li>First Aid Kit - QL
-			<match><item ref="246800/246801/1">1</item>, <item ref="246800/246801/100">100</item></match>,
-			<item ref="246802/246803/200">200</item></li>
-		<li>Prototype First Aid Kit <unavailable/> - QL <selected><item ref="299000/299000/50">50</item></selected></li>
+			<match><item id="246800/246801" ql="1">1</item>, <item id="246800/246801" ql="100">100</item></match>,
+			<item id="246802/246803" ql="200">200</item></li>
+		<li>Prototype First Aid Kit <unavailable/> - QL <selected><item id="299000" ql="50">50</item></selected></li>
 	</ul>
 
 	<highlight>*Results have been limited to the first 3 results.</highlight>

@@ -65,15 +65,15 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Fields: label + `:`, padded to the widest label of the group plus one space.
 - Tables with border: columns separated by ` | `, header row underlined (`<u>`) with highlighted
   cells. Layout tables: columns separated by two spaces.
-- Lists: `- ` and `1. ` prefixes.
+- Lists: `- ` and `1. ` prefixes (the bullet is configurable, `-` is the default).
 - `<match>`: red brackets around the content, `<selected>`: yellow brackets.
 - `<syntax>`: highlighted, with the command prefix.
-- `<slider>`: the widget fallback (`|` bars, red `│` marker, marker text centred below it).
+- `<slider>`: the widget fallback (`l` bars, red `│` marker, marker text centred below it).
 
 ### ANSI / plain text
 - Monospace alignment (`MonospaceMetric`).
 - Tables with border: ` │ ` between columns and a `─┼─` rule under the header row.
-- Lists: `• `.
+- Lists: `• ` (configurable).
 - ANSI: window colour as base colour, links blue and underlined, item links as OSC 8 hyperlinks.
 
 ### HTML

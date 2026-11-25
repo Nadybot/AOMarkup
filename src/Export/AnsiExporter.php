@@ -9,6 +9,12 @@ use AO\Markup\Metric\{MonospaceMetric, TextMetric};
 
 /** Terminal output with 24-bit colours, OSC 8 hyperlinks and monospace tables */
 final class AnsiExporter extends BaseExporter {
+	/** @param string $bullet Prefix of unordered list items, followed by a space */
+	public function __construct(
+		public readonly string $bullet='•',
+	) {
+	}
+
 	public function export(Document $document, RenderContext $context): string {
 		throw NotImplementedException::for(self::class);
 	}
