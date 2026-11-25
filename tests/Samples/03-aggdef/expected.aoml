@@ -1,0 +1,21 @@
+<a href="text://<font color=#89D2E8><font color=#FFFF00>Agg/Def Results</font>
+
+Attack:      <font color=#FFFFFF>1.2</font> second(s)
+Recharge:  <font color=#FFFFFF>1.7</font> second(s)
+Init Skill:  <font color=#FFFFFF>300</font>
+
+You must set your AGG bar at <font color=#FFFFFF>73% (6)</font> to wield your weapon at <font color=#FFFFFF>1/1</font>.
+(<a href='skillid://51'>Agg/def-Slider</a> should read <font color=#FFFFFF>45</font>).
+
+<font color=#FCA712>Init needed for max speed at</font>
+    Full Agg (100%):   <font color=#FFFFFF>135</font> inits
+    Neutral (87.5%):   <font color=#FFFFFF>210</font> inits
+    Full Def (0%):     <font color=#FFFFFF>1170</font> inits
+
+1170 DEF <font color=#00DE42>||||||||||||||||||||||||||||||||||||</font><font color=#FF0000>│</font><font color=#00DE42>|||||||||||||</font> AGG 135
+                                                    You: 300
+
+Note that at the neutral position (87.5%), your attack and recharge time will match that of the weapon you are using.
+
+Based upon a RINGBOT module made by NoGoal(RK2)
+Modified for Budabot by Healnjoo and Nadyita">Agg/Def Results</a>

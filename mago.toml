@@ -1,0 +1,45 @@
+php-version = "8.1"
+
+[source]
+paths = ["src", "tests"]
+excludes = [ ]
+includes = ["vendor"]
+extensions = ["php"]
+
+[linter.rules]
+loop-does-not-iterate  = { enabled = false }
+assert-description = { enabled = false }
+prefer-arrow-function = { enabled = false }
+no-error-control-operator = { enabled = false }
+no-multi-assignments = { enabled = false }
+excessive-parameter-list = { enabled = false }
+too-many-properties = { enabled = false }
+too-many-methods = { enabled = false }
+kan-defect = { enabled = false }
+halstead = { enabled = false }
+cyclomatic-complexity = { enabled = false }
+no-insecure-comparison = { enabled = false }
+no-literal-password = { enabled = false }
+no-empty-catch-clause = { enabled = false }
+no-else-clause = { enabled = false }
+no-boolean-flag-parameter = { enabled = false }
+literal-named-argument = { enabled = false }
+inline-variable-return = { enabled = false }
+prefer-early-continue = { enabled = false }
+no-nested-ternary = { enabled = false }
+no-redundant-math = { enabled = false }
+use-compound-assignment = { enabled = false }
+tainted-data-to-sink = { enabled = false }
+no-redundant-use = { enabled = false }
+no-assign-in-condition = { enabled = false }
+prefer-first-class-callable = { enabled = false }
+too-many-enum-cases = { threshold = 666 }
+no-isset = { enabled = false }
+no-sprintf-concat = { enabled = false }
+no-redundant-method-override = { enabled = false }
+yoda-conditions = { enabled = false }
+class-name = { enabled = false }
+interface-name = { enabled = false }
+
+[analyzer]
+ignore = ["mixed-assignment", "mixed-argument", "redundant-docblock-type", "redundant-cast", "avoid-catching-error", "redundant-isset-check", "redundant-null-coalesce", "redundant-comparison", "redundant-condition"]

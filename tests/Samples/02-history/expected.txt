@@ -1,0 +1,11 @@
+History of Pigtail for RK1 (Atlantean)
+
+Date       │ Level │ AI │ Faction │ Breed   │ Guild (rank)
+───────────┼───────┼────┼─────────┼─────────┼─────────────────────────
+2010-02-24 │   195 │  0 │ Neutral │ Atrox   │ Wolf Brigade (Applicant)
+2009-05-18 │   195 │  0 │ Neutral │ Atrox   │ Wolf Brigade (Member)
+2009-04-11 │   187 │ 12 │ Clan    │ Solitus │ Not in a guild
+2008-01-02 │ DELETED
+
+History provided by Auno.org, Chrisax, and Athen Paladins
+

@@ -1,0 +1,16 @@
+<a href="lepanel://v1/<panel title='Agg/Def Results'>
+<stat label='Attack' value='1.2' unit='second(s)'/>
+<stat label='Recharge' value='1.7' unit='second(s)'/>
+<stat label='Init Skill' value='300'/>
+<text>You must set your AGG bar at <font color=#FFFFFF>73% (6)</font> to wield your weapon at <font color=#FFFFFF>1/1</font>.
+(<a href='skillid://51'>Agg/def-Slider</a> should read <font color=#FFFFFF>45</font>).</text>
+<section title='Init needed for max speed at' open>
+<stat label='Full Agg (100%)' value='135' unit='inits'/>
+<stat label='Neutral (87.5%)' value='210' unit='inits'/>
+<stat label='Full Def (0%)' value='1170' unit='inits'/>
+</section>
+<bar min=0 max=100 cur=73 left='1170 DEF' right='AGG 135' marker='You: 300'/>
+<text>Note that at the neutral position (87.5%), your attack and recharge time will match that of the weapon you are using.</text>
+<text>Based upon a RINGBOT module made by NoGoal(RK2)
+Modified for Budabot by Healnjoo and Nadyita</text>
+</panel>">Agg/Def Results</a>

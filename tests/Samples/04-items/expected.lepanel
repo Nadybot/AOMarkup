@@ -1,0 +1,9 @@
+<a href="lepanel://v1/<panel title='Item Search Results (3)'>
+<ul>
+<li><a href='itemref://247115/247115/1'>Basic First Aid Kit</a> (QL 1)</li>
+<li>First Aid Kit - QL <font color=#FF0000>[</font><a href='itemref://246800/246801/1'>1</a>, <a href='itemref://246800/246801/100'>100</a><font color=#FF0000>]</font>, <a href='itemref://246802/246803/200'>200</a></li>
+<li>Prototype First Aid Kit <font color=#FF0000>(!)</font> - QL <font color=#FFFF00>[</font><a href='itemref://299000/299000/50'>50</a><font color=#FFFF00>]</font></li>
+</ul>
+<text><font color=#FFFFFF>*Results have been limited to the first 3 results.</font></text>
+<text>Item DB rips created using the AODB tool</text>
+</panel>">Item Search Results (3)</a>

@@ -1,0 +1,15 @@
+parameters:
+  level: 8
+  paths:
+    - src
+    - tests
+  parallel:
+    maximumNumberOfProcesses: 6
+  phpVersion: 80100
+  ignoreErrors:
+    # Constructor properties of stubs that are not implemented yet; remove once they are
+    -
+      identifier: property.onlyWritten
+      reportUnmatched: false
+includes:
+  - vendor/thecodingmachine/phpstan-safe-rule/phpstan-safe-rule.neon

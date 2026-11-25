@@ -1,0 +1,22 @@
+{#89D2E8}{#FFFF00}Agg/Def Results{/}
+
+Attack:     {#FFFFFF}1.2{/} second(s)
+Recharge:   {#FFFFFF}1.7{/} second(s)
+Init Skill: {#FFFFFF}300{/}
+
+You must set your AGG bar at {#FFFFFF}73% (6){/} to wield your weapon at {#FFFFFF}1/1{/}.
+({u}{#219CFF}Agg/def-Slider{/}{/u} should read {#FFFFFF}45{/}).
+
+{#FCA712}Init needed for max speed at{/}
+    Full Agg (100%):  {#FFFFFF}135{/} inits
+    Neutral (87.5%):  {#FFFFFF}210{/} inits
+    Full Def (0%):   {#FFFFFF}1170{/} inits
+
+1170 DEF {#00DE42}||||||||||||||||||||||||||||||||||||{/}{#FF0000}│{/}{#00DE42}|||||||||||||{/} AGG 135
+                                         You: 300
+
+Note that at the neutral position (87.5%), your attack and recharge time will match that of the weapon you are using.
+
+Based upon a RINGBOT module made by NoGoal(RK2)
+Modified for Budabot by Healnjoo and Nadyita
+{/}

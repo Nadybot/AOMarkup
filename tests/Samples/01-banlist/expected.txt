@@ -1,0 +1,12 @@
+Banlist (2)
+
+Evilguy
+    Date:     2026-11-20 14:02
+    By:       Nadyita
+    Ban ends: 6 days, 3 hrs.
+    Reason:   Ninja-looting in "APF"
+
+Badguy
+    By:       Nadyita
+    Ban ends: Never
+
