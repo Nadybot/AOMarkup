@@ -12,7 +12,9 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 - Elements must be closed: `<green>…</green>`, `<tr>…</tr>`, `<li>…</li>`.
   Nothing is closed implicitly.
 - Void elements are written as `<slider … />`. Known void elements
-  (`<br>`, `<hr>`, `<myname>`, `<myguild>`, `<symbol>`, `<pagebreak>`) may omit the slash.
+  (`<br>`, `<hr>`, `<pagebreak>`, `<img>`, `<myname>`, `<myguild>`, `<symbol>`, `<var>`)
+  may omit the slash. Any other element may be written self-closing when it is empty.
+- Comments (`<!-- … -->`) are dropped.
 - Attribute values are quoted with `"` or `'`. Boolean attributes may be written without a
   value: `<table border>` is the same as `<table border="true">`. `"true"` and `"false"`
   are the canonical values; the serializer always writes them. An unquoted value
@@ -31,6 +33,8 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 - Line breaks directly after an opening or before/after a closing **block** element
   are not significant. Inside element-only containers (`<table>`, `<tr>`, `<ul>`, `<ol>`)
   all whitespace is ignored.
+- Inside an inline element, an empty line is just two line breaks; paragraphs can only
+  be separated at the block level.
 
 ## 2. Block elements
 
@@ -92,8 +96,8 @@ column; a `<td align>` overrides it for that cell.
 | `<item>` | `id`, `ql` | An item. `id` is `lowid/highid`, or just `id` if both are the same. `ql` is required; if it is missing or invalid, a warning is logged and QL 1 is used. Content = link text. |
 | `<nano>` | `id` | A nano program. |
 | `<skill>` | `id` | A skill. |
-| `<char>` | `name` | A character. Empty content = name. |
-| `<cmd>` | `show`? = `command` (default), `tell`, or text in content | A command for this bot. The exporter adds `/tell <myname>` and the command prefix. |
+| `<char>` | `name`? | A character. Without `name`, the content is the name; with `name`, the content is the link text. |
+| `<cmd>` | `command`?, `show`? | A command for this bot, without prefix. Without `command`, the content is the command (`<cmd>help syntax</cmd>`) and `show` decides the link text: `command` (default, `!help syntax`) or `tell` (`/tell Botname !help syntax`). With `command`, the content is the link text: `<cmd command="help">Help</cmd>`. The exporter adds `/tell <myname>` and the command prefix. |
 | `<url>` | `href` | An external link. |
 | `<img>` | `src` = `rdb:ID` or `tdb:NAME` | An inline image. |
 

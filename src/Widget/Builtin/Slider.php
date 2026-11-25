@@ -16,7 +16,7 @@ use AO\Markup\Widget\{AsWidget, ExpansionContext, Widget};
  * The bar uses the narrower of `l` and `|` in the target's metric (`l` in the
  * AO font, where it is 4 px instead of 6), and `|` if both are equally wide.
  */
-#[AsWidget('slider')]
+#[AsWidget('slider', block: true)]
 final class Slider implements Widget {
 	/** Number of bar characters */
 	public const LENGTH = 50;

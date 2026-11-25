@@ -33,6 +33,10 @@ Every node is an immutable value object. There are three kinds:
   links (`ItemLink`, `NanoLink`, `SkillLink`, `CharLink`, `CommandLink`, `UrlLink`, `PopupLink`)
 - **Widget nodes**: `WidgetNode`, which wraps a `Widget` instance plus its children
 
+Block containers (the body, `Window`, `Section`, `ListItem`, `TableCell`, `Indent`,
+`Center`, `Keep`, `Repeat`) contain block nodes only: inline content in them is always
+wrapped in a `Paragraph`. `Field`, `Heading` and all inline nodes contain inline nodes only.
+
 ## Importers (`AO\Markup\Import`)
 `Importer::import(string): Document`. Importers never produce widgets: guessing a
 slider from `|||` text is exactly the heuristic we want to get rid of.
@@ -83,6 +87,8 @@ final class Slider implements Widget {
 
 - **Parsing** is generic: the `WidgetRegistry` maps the element name to the class and
   hydrates the constructor parameters from the attributes (types, required, defaults).
+  `#[AsWidget('name', void: …, block: …)]` says whether the widget has content and whether
+  it stands on its own like a paragraph (`<slider>`) or flows within a line (`<unavailable/>`).
 - **Serialising** is generic as well.
 - **`fallback()` is mandatory** and returns core nodes only. With it, every widget works in
   every exporter right away. The `ExpansionContext` provides the target's `TextMetric`, so a
