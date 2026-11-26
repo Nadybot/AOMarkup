@@ -67,6 +67,10 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   `header` colour, then an empty line. `"` inside the popup becomes `&quot;`, attributes of
   inner links use `'`.
 - Alignment uses `AoFontMetric` (pixels); padding is rounded to the nearest space (5 px).
+- Numeric content (a table cell or field value whose text is only digits, `.` and `,`) is padded
+  with black `0`s next to the number, one per 8 px (a digit is always 8 px wide), the rest with
+  spaces on the outer side. Numbers of the same shape then line up exactly. A column or field
+  list is numeric if all its cells/values are; header cells and cells with `colspan` don't count.
 - Fields: label + `:`, padded to the widest label of the group plus one space.
 - Tables with border: columns separated by ` | `, header row underlined (`<u>`) with highlighted
   cells. Layout tables: columns separated by two spaces.

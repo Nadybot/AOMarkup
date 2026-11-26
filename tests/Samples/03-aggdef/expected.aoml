@@ -8,8 +8,8 @@ You must set your AGG bar at <font color=#FFFFFF>73% (6)</font> to wield your we
 (<a href='skillid://51'>Agg/def-Slider</a> should read <font color=#FFFFFF>45</font>).
 
 <font color=#FCA712>Init needed for max speed at</font>
-    Full Agg (100%):   <font color=#FFFFFF>135</font> inits
-    Neutral (87.5%):   <font color=#FFFFFF>210</font> inits
+    Full Agg (100%): <font color=#000000>0</font><font color=#FFFFFF>135</font> inits
+    Neutral (87.5%): <font color=#000000>0</font><font color=#FFFFFF>210</font> inits
     Full Def (0%):     <font color=#FFFFFF>1170</font> inits
 
 1170 DEF <font color=#00DE42>llllllllllllllllllllllllllllllllllll</font><font color=#FF0000>│</font><font color=#00DE42>lllllllllllll</font> AGG 135

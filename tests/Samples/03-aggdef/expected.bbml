@@ -8,8 +8,8 @@ You must set your AGG bar at <highlight>73% (6)<end> to wield your weapon at <hi
 (<a href='skillid://51'>Agg/def-Slider</a> should read <highlight>45<end>).
 
 <header2>Init needed for max speed at<end>
-<tab>Full Agg (100%):   <highlight>135<end> inits
-<tab>Neutral (87.5%):   <highlight>210<end> inits
+<tab>Full Agg (100%): <black>0<end><highlight>135<end> inits
+<tab>Neutral (87.5%): <black>0<end><highlight>210<end> inits
 <tab>Full Def (0%):     <highlight>1170<end> inits
 
 1170 DEF <green>llllllllllllllllllllllllllllllllllll<end><red>│<end><green>lllllllllllll<end> AGG 135

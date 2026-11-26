@@ -18,7 +18,7 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   `<keep>`, `<repeat>`), not a copy of any target format.
 - Strict closing: `</green>` instead of `<end>`; `<tr>`, `<td>`, `<th>`, `<li>` are always closed.
   Only known void tags may omit the slash.
-- No `<tab>`, no `<black>` padding, no layout with spaces. Use `<section>`, `<dl>`,
+- No `<tab>`, no `<black>` padding, no layout with spaces in AoXML. Use `<section>`, `<dl>`,
   `<table>`, `<ul>`/`<ol>`, `<indent>`. Leading whitespace in the source is not significant.
 - Game objects are semantic elements (`<item>`, `<nano>`, `<skill>`, `<char>`, `<waypoint>`,
   `<cmd>`, `<client>`, `<url>`). AoXML has no `<a>`.
@@ -45,6 +45,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - Boolean attributes: `<table border>` is allowed as input; canonical form is `border="true"`.
 - Table alignment: `<th align>` is the default for its column, `<td align>` overrides it.
   No `columns` attribute. Details in `docs/AoXML.md` §2.1.
+- AOML/BBML exporters pad numeric cells and field values (only digits, `.`, `,`) with black `0`s
+  (8 px, like every digit), the rest with spaces; detected when rendering, not marked in AoXML.
 - The list bullet is an exporter option (`-` for AOML, `•` for ANSI/plain text).
 - The slider bar uses the narrowest of `|` and `l` in the target metric: `l` in the AO font
   (4 px, looks much better than `|`), `|` in monospace.
