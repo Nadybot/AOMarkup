@@ -15,7 +15,10 @@ enum StyleName: string {
 
 	case Header = 'header';
 	case Header2 = 'header2';
-	case Highlight = 'highlight';
+
+	/** Emphasis; the theme shows it in its highlight colour */
+	case Strong = 'strong';
+
 	case On = 'on';
 	case Off = 'off';
 	case Neutral = 'neutral';

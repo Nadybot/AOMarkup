@@ -1,10 +1,12 @@
-<popup title="Agg/Def Results">
+<popup window="aggdef">Agg/Def Results</popup>
+
+<window id="aggdef" title="Agg/Def Results">
 	<field name="Attack" unit="second(s)">1.2</field>
 	<field name="Recharge" unit="second(s)">1.7</field>
 	<field name="Init Skill">300</field>
 
-	You must set your AGG bar at <highlight>73% (6)</highlight> to wield your weapon at <highlight>1/1</highlight>.
-	(<skill id="51">Agg/def-Slider</skill> should read <highlight>45</highlight>).
+	You must set your AGG bar at <strong>73% (6)</strong> to wield your weapon at <strong>1/1</strong>.
+	(<skill id="51">Agg/def-Slider</skill> should read <strong>45</strong>).
 
 	<section title="Init needed for max speed at">
 		<field name="Full Agg (100%)" unit="inits">135</field>
@@ -18,4 +20,4 @@
 
 	Based upon a RINGBOT module made by NoGoal(RK2)
 	Modified for Budabot by Healnjoo and Nadyita
-</popup>
+</window>

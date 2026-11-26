@@ -10,7 +10,7 @@ class DefaultTheme implements Theme {
 		return match ($style) {
 			StyleName::Header => '#FFFF00',
 			StyleName::Header2 => '#FCA712',
-			StyleName::Highlight, StyleName::Syntax => '#FFFFFF',
+			StyleName::Strong, StyleName::Syntax => '#FFFFFF',
 			StyleName::On => '#00DE42',
 			StyleName::Off => '#FF6666',
 			StyleName::Neutral => '#E6E1A6',

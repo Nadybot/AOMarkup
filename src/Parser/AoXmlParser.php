@@ -10,7 +10,9 @@ use AO\Markup\Node\{
 	Align,
 	Center,
 	CharLink,
+	ClientCommandLink,
 	Color,
+	CommandChannel,
 	CommandDisplay,
 	CommandLink,
 	Field,
@@ -41,6 +43,7 @@ use AO\Markup\Node\{
 	TableRow,
 	Text,
 	UrlLink,
+	WaypointLink,
 };
 use AO\Markup\Widget\WidgetRegistry;
 use Psr\Log\{LoggerInterface, NullLogger};
@@ -49,7 +52,7 @@ use Psr\Log\{LoggerInterface, NullLogger};
  * Parser for AoXML, see docs/AoXML.md
  *
  * Never throws on bad input: it recovers and reports problems as warnings.
- * Inline <popup>s are hoisted into Document::$windows.
+ * <window>s end up in Document::$windows, <popup>s link to them.
  *
  * Every block container (the body, windows, sections, list items, table cells, …)
  * contains block nodes only; inline content in it is wrapped in Paragraphs.
@@ -66,20 +69,30 @@ final class AoXmlParser implements Importer {
 
 	/** Elements that flow within a line, apart from the named styles */
 	private const INLINE = [
-		'color', 'item', 'nano', 'skill', 'char', 'cmd', 'url', 'img', 'br',
+		'color', 'item', 'nano', 'skill', 'char', 'waypoint', 'cmd', 'client', 'url', 'img', 'br',
 		'myname', 'myguild', 'symbol', 'var', 'popup',
 	];
 
-	/** @var array<string,?Window> Windows by id, in document order; null while being parsed */
-	private array $windows = [];
+	/** Hints for elements people bring along from BBML or HTML */
+	private const HINTS = [
+		'a' => 'AoXML has no <a>, use <popup>, <cmd>, <client>, <url>, <item>, … instead',
+		'highlight' => 'use <strong>',
+		'end' => 'close the element instead, e.g. </strong>',
+		'tab' => 'use <indent>, <section>, <field> or <table>',
+		'font' => 'use <color value="#RRGGBB">',
+		'b' => 'use <strong>',
+		'header' => 'the window title comes from <window title>',
+		'header2' => 'use <section title>',
+	];
 
-	/** @var array<string,true> Ids of explicit <window>s, never used for generated ids */
-	private array $reservedIds = [];
+	/** @var array<string,Window> Windows by id, in document order */
+	private array $windows = [];
 
 	/** @var array<string,int> Referenced window ids and the line of the first reference */
 	private array $refs = [];
 
-	private int $nextId = 1;
+	/** Currently parsing the content of a window */
+	private bool $inWindow = false;
 
 	public function __construct(
 		private WidgetRegistry $widgets=new WidgetRegistry(),
@@ -89,24 +102,26 @@ final class AoXmlParser implements Importer {
 
 	public function parse(string $input): Document {
 		$this->windows = [];
-		$this->reservedIds = [];
 		$this->refs = [];
-		$this->nextId = 1;
+		$this->inWindow = false;
 
 		$root = $this->buildTree((new Tokenizer($this->logger))->tokenize($input));
-		$this->reserveWindowIds($root);
-		$body = $this->blocks($root->children);
+		$body = $this->blocks($root->children, true);
 
-		foreach ($this->refs as $ref => $line) {
-			if (!isset($this->windows[$ref])) {
-				$this->warn($line, "<popup ref=\"{$ref}\"> refers to a window that does not exist");
-			}
-		}
-		return new Document(new Fragment(...$body), array_filter($this->windows));
+		$this->reportMissingWindows();
+		return new Document(new Fragment(...$body), $this->windows);
 	}
 
 	public function import(string $input): Document {
 		return $this->parse($input);
+	}
+
+	private function reportMissingWindows(): void {
+		foreach ($this->refs as $ref => $line) {
+			if (!isset($this->windows[$ref])) {
+				$this->warn($line, "<popup window=\"{$ref}\"> refers to a window that does not exist");
+			}
+		}
 	}
 
 	// ------------------------------------------------------------------
@@ -126,7 +141,8 @@ final class AoXmlParser implements Importer {
 				continue;
 			}
 			if (!$this->isKnown($token->name)) {
-				$this->warn($token->line, "Unknown element <{$token->name}> taken as text");
+				$hint = isset(self::HINTS[$token->name]) ? '; ' . self::HINTS[$token->name] : '';
+				$this->warn($token->line, "Unknown element <{$token->name}> taken as text{$hint}");
 				$parent->children []= $token->text;
 				continue;
 			}
@@ -181,18 +197,6 @@ final class AoXmlParser implements Importer {
 		return in_array($name, self::BLOCK, true) || ($this->widgets->definition($name)->block ?? false);
 	}
 
-	private function reserveWindowIds(RawElement $element): void {
-		foreach ($element->children as $child) {
-			if (!($child instanceof RawElement)) {
-				continue;
-			}
-			if ($child->name === 'window' && is_string($child->attributes['id'] ?? null)) {
-				$this->reservedIds[$child->attributes['id']] = true;
-			}
-			$this->reserveWindowIds($child);
-		}
-	}
-
 	// ------------------------------------------------------------------
 	// Block content
 	// ------------------------------------------------------------------
@@ -201,17 +205,18 @@ final class AoXmlParser implements Importer {
 	 * Convert the content of a block container
 	 *
 	 * @param list<RawElement|string> $items
+	 * @param bool                    $root  True for the top level of the message
 	 *
 	 * @return list<Node>
 	 */
-	private function blocks(array $items): array {
+	private function blocks(array $items, bool $root=false): array {
 		$result = [];
 		$run = [];
 		foreach ($items as $item) {
 			if ($item instanceof RawElement && $this->isBlock($item->name)) {
 				array_push($result, ...$this->paragraphs($run));
 				$run = [];
-				array_push($result, ...$this->block($item));
+				array_push($result, ...$this->block($item, $root));
 				continue;
 			}
 			$run []= $item;
@@ -250,7 +255,7 @@ final class AoXmlParser implements Importer {
 	}
 
 	/** @return list<Node> */
-	private function block(RawElement $element): array {
+	private function block(RawElement $element, bool $root=false): array {
 		$nodes = match ($element->name) {
 			'section' => [new Section($this->string($element, 'title', ''), ...$this->blocks($element->children))],
 			'field' => [new Field(
@@ -267,7 +272,7 @@ final class AoXmlParser implements Importer {
 			'repeat' => [new Repeat(...$this->blocks($element->children))],
 			'hr' => [new HorizontalRule()],
 			'pagebreak' => [new PageBreak()],
-			'window' => $this->window($element),
+			'window' => $this->window($element, $root),
 			'tr', 'th', 'td', 'li' => $this->misplaced($element),
 			default => $this->widget($element, true),
 		};
@@ -285,20 +290,26 @@ final class AoXmlParser implements Importer {
 		return $this->blocks($element->children);
 	}
 
-	/** @return list<Node> Always empty: the window is hoisted */
-	private function window(RawElement $element): array {
+	/** @return list<Node> Always empty: the window goes into Document::$windows */
+	private function window(RawElement $element, bool $root): array {
+		if (!$root) {
+			$this->warn($element->line, '<window> is only allowed at the top level, not inside another element');
+		}
 		$id = $this->optionalString($element, 'id');
+		$title = $this->string($element, 'title', '');
 		if ($id === null) {
-			$this->warn($element->line, '<window> without id');
-			$id = $this->generateId();
-		} elseif (array_key_exists($id, $this->windows)) {
+			$this->warn($element->line, '<window> without id cannot be opened, ignoring it');
+			return [];
+		}
+		if (isset($this->windows[$id])) {
 			$this->warn($element->line, "Duplicate window id \"{$id}\", ignoring this window");
 			return [];
 		}
-		$this->windows[$id] = null;
-		$title = $this->string($element, 'title', '');
-		$name = $this->optionalString($element, 'name');
-		$this->windows[$id] = new Window($id, $title, $name, ...$this->blocks($element->children));
+		$inWindow = $this->inWindow;
+		$this->inWindow = true;
+		$children = $this->blocks($element->children);
+		$this->inWindow = $inWindow;
+		$this->windows[$id] = new Window($id, $title, ...$children);
 		return [];
 	}
 
@@ -484,7 +495,28 @@ final class AoXmlParser implements Importer {
 		if ($buffer !== '') {
 			$out []= new Text($buffer);
 		}
-		return $out;
+		return self::mergeTexts($out);
+	}
+
+	/**
+	 * Merge adjacent Text nodes, e.g. after an invalid element was replaced by its content
+	 *
+	 * @param list<Node|ParagraphBreak> $nodes
+	 *
+	 * @return list<Node|ParagraphBreak>
+	 */
+	private static function mergeTexts(array $nodes): array {
+		$result = [];
+		$last = null;
+		foreach ($nodes as $node) {
+			if ($node instanceof Text && $last instanceof Text) {
+				$node = new Text($last->text . $node->text);
+				array_pop($result);
+			}
+			$result []= $node;
+			$last = $node;
+		}
+		return $result;
 	}
 
 	/**
@@ -521,6 +553,9 @@ final class AoXmlParser implements Importer {
 		if ($style !== null) {
 			return [new Style($style, ...$this->content($element, $state))];
 		}
+		if ($element->name === 'window') {
+			return $this->window($element, false);
+		}
 		if ($this->isBlock($element->name) && !$this->widgets->has($element->name)) {
 			$this->warn($element->line, "Block element <{$element->name}> inside a line, using its content only");
 			foreach (array_keys($element->attributes) as $attribute) {
@@ -536,10 +571,12 @@ final class AoXmlParser implements Importer {
 			'item' => $this->item($element, $state),
 			'nano', 'skill' => $this->idLink($element, $state),
 			'char' => $this->char($element, $state),
+			'waypoint' => $this->waypoint($element, $state),
 			'cmd' => $this->command($element, $state),
+			'client' => $this->client($element, $state),
 			'url' => $this->url($element, $state),
 			'img' => $this->img($element),
-			'popup' => $this->popup($element),
+			'popup' => $this->popup($element, $state),
 			default => $this->widget($element, false, $state),
 		};
 	}
@@ -629,16 +666,51 @@ final class AoXmlParser implements Importer {
 				$this->warn($element->line, "Invalid show=\"{$value}\" on <cmd>, use command or tell");
 			}
 		}
+		$via = CommandChannel::Tell;
+		$value = $this->optionalString($element, 'via');
+		if ($value !== null) {
+			$via = CommandChannel::tryFrom($value) ?? CommandChannel::Tell;
+			if (CommandChannel::tryFrom($value) === null) {
+				$this->warn($element->line, "Invalid via=\"{$value}\" on <cmd>, use tell, priv or org");
+			}
+		}
 		$command = $this->optionalString($element, 'command');
 		if ($command !== null) {
-			return [new CommandLink($command, $show, ...$this->content($element, $state))];
+			return [new CommandLink($command, $show, $via, ...$this->content($element, $state))];
 		}
 		$command = $this->plainText($element);
 		if ($command === '') {
 			$this->warn($element->line, '<cmd> without command');
 			return [];
 		}
-		return [new CommandLink($command, $show)];
+		return [new CommandLink($command, $show, $via)];
+	}
+
+	/** @return list<Node> */
+	private function client(RawElement $element, FlowState $state): array {
+		$command = $this->optionalString($element, 'command');
+		if ($command !== null) {
+			return [new ClientCommandLink($command, ...$this->content($element, $state))];
+		}
+		$command = $this->plainText($element);
+		if ($command === '') {
+			$this->warn($element->line, '<client> without command');
+			return [];
+		}
+		return [new ClientCommandLink($command)];
+	}
+
+	/** @return list<Node> */
+	private function waypoint(RawElement $element, FlowState $state): array {
+		$x = $this->int($element, 'x');
+		$y = $this->int($element, 'y');
+		$playfield = $this->int($element, 'pf');
+		$children = $this->content($element, $state);
+		if ($x === null || $y === null || $playfield === null) {
+			$this->warn($element->line, '<waypoint> needs numeric x, y and pf');
+			return $children;
+		}
+		return [new WaypointLink($x, $y, $playfield, ...$children)];
 	}
 
 	/** @return list<Node> */
@@ -668,25 +740,18 @@ final class AoXmlParser implements Importer {
 	}
 
 	/** @return list<Node> */
-	private function popup(RawElement $element): array {
-		$ref = $this->optionalString($element, 'ref');
-		if ($ref !== null) {
-			$this->refs[$ref] ??= $element->line;
-			return [new PopupLink($ref, ...$this->content($element, new FlowState()))];
+	private function popup(RawElement $element, FlowState $state): array {
+		$window = $this->string($element, 'window', '');
+		$children = $this->content($element, $state);
+		if ($this->inWindow) {
+			$this->warn($element->line, 'Windows cannot be nested, <popup> inside a <window> is shown as text');
+			return $children;
 		}
-		$title = $this->optionalString($element, 'title');
-		$label = $this->optionalString($element, 'label');
-		if ($title === null) {
-			$this->warn($element->line, '<popup> without title');
+		if ($window === '') {
+			return $children;
 		}
-		$title ??= $label ?? '';
-		$label ??= $title;
-		$name = $this->optionalString($element, 'name');
-
-		$id = $this->generateId();
-		$this->windows[$id] = null;
-		$this->windows[$id] = new Window($id, $title, $name, ...$this->blocks($element->children));
-		return [new PopupLink($id, new Text($label))];
+		$this->refs[$window] ??= $element->line;
+		return [new PopupLink($window, ...$children)];
 	}
 
 	/** @return list<Node> */
@@ -779,13 +844,6 @@ final class AoXmlParser implements Importer {
 	}
 
 	// ------------------------------------------------------------------
-
-	private function generateId(): string {
-		do {
-			$id = 'w' . $this->nextId++;
-		} while (isset($this->reservedIds[$id]) || array_key_exists($id, $this->windows));
-		return $id;
-	}
 
 	/**
 	 * Match a regular expression

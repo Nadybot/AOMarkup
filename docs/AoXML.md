@@ -93,7 +93,7 @@ can only give hints; it never decides where a page ends.
 ### 3.1 Semantic styles
 | Element | Meaning |
 |---|---|
-| `<highlight>` | Emphasised value |
+| `<strong>` | Emphasis, e.g. a value. Each target decides how to show it: highlight colour in the game, bold in Discord, `<strong>` in HTML. |
 | `<on>`, `<off>` | Enabled / disabled state |
 | `<neutral>`, `<omni>`, `<clan>`, `<unknown>` | Faction |
 | `<match>` | Part matching a search |
@@ -112,38 +112,43 @@ can only give hints; it never decides where a page ends.
 | `<nano>` | `id` | A nano program. |
 | `<skill>` | `id` | A skill. |
 | `<char>` | `name`? | A character. Without `name`, the content is the name; with `name`, the content is the link text. |
-| `<cmd>` | `command`?, `show`? | A command for this bot, without prefix. Without `command`, the content is the command (`<cmd>help syntax</cmd>`) and `show` decides the link text: `command` (default, `!help syntax`) or `tell` (`/tell Botname !help syntax`). With `command`, the content is the link text: `<cmd command="help">Help</cmd>`. The exporter adds `/tell <myname>` and the command prefix. |
-| `<url>` | `href` | An external link. |
+| `<cmd>` | `command`?, `show`?, `via`? | A command for this bot, without prefix. Without `command`, the content is the command (`<cmd>help syntax</cmd>`) and `show` decides the link text: `command` (default, `!help syntax`) or `tell` (`/tell Botname !help syntax`). With `command`, the content is the link text: `<cmd command="help">Help</cmd>`. `via` is how the command reaches the bot: `tell` (default, `/tell <myname> !…`), `priv` (the bot's private channel, `/g <myname> !…`) or `org` (the org channel, `/o !…`). The exporter adds all of this. |
+| `<client>` | `command`? | A command for the game client, e.g. `/assist Nady` or `/macro …`. Without `command`, the content is the command; with `command`, the content is the link text. Targets outside the game show it as code. |
+| `<waypoint>` | `x`, `y`, `pf` | A waypoint at the given coordinates of playfield `pf` (numeric id). Content = link text. |
+| `<url>` | `href` | An external link. AoXML has no `<a>`: links are always one of the elements above. |
 | `<img>` | `src` = `rdb:ID` or `tdb:NAME` | An inline image. |
 
 ### 3.4 Placeholders
 `<myname/>`, `<myguild/>`, `<symbol/>` and the generic `<var name="…"/>`.
 They are resolved at export time by a `PlaceholderProvider`.
 
-## 4. Popups
-A popup is a link that opens a window.
+Placeholders are elements, so they only exist in content. **Attribute values are always plain
+text**: `command="/g &lt;myname&gt; hi"` is the literal text `/g <myname> hi`, nothing is
+replaced. Where a command needs the bot's name or prefix, the element provides it
+(`<cmd via="priv">`).
+
+## 4. Windows and popups
+A **window** is defined once, at the top level of the message, and opened by **popup** links
+in the message:
 
 ```xml
-<popup title="Banlist (2)">…window content…</popup>
-<popup title="History of Pigtail" label="History">…</popup>
-<popup title="Ban" name="nadybot-ban">…</popup>
+There are <popup window="bans"><strong>2</strong> bans</popup> on this bot.
+<window id="bans" title="Banlist (2)">…window content…</window>
 ```
 
-- `title`: the window title. `label`: the link text, defaults to `title`.
-- `name`: the window name. Targets that support it reuse an open window of the same name.
-- Popups may be nested. Targets that cannot nest render inner popups differently,
-  e.g. as a command that fetches the inner window.
+| Element | Attributes | Meaning |
+|---|---|---|
+| `<window>` | `id`, `title` | A window. Only allowed at the top level, never inside another element. Its position in the source does not matter. |
+| `<popup>` | `window` | A link that opens the window with this id. The content is the link text and may contain markup. Only allowed in the message, not inside a window. |
 
-The parser **hoists** every popup into the document: the message keeps a
-`<popup ref="…">label</popup>` reference and the window becomes a separate entry.
-The serialised (canonical) form of a document with windows is therefore:
-
-```xml
-… <popup ref="w1">Banlist (2)</popup> …
-<window id="w1" title="Banlist (2)">…</window>
-```
-
-Both forms are valid input.
+- Windows are never nested: a window cannot contain popups. This is what the official client
+  can show (`text://` cannot contain `text://`), and it keeps every target simple.
+- One window may be opened by several popups.
+- A popup to a window that does not exist, a window without `id` or `title`, a duplicate `id`
+  and a popup inside a window are reported as warnings. A popup inside a window keeps its
+  link text as plain text; a `<window>` inside another element is still used, with a warning.
+- Code usually does not write ids by hand: the library's builder returns a window object,
+  and the popup is created from it.
 
 ## 5. Widgets
 Widgets are registered elements with a mandatory fallback to core elements, see
@@ -161,6 +166,8 @@ BBML, the Budabot markup language (`<highlight>…<end>`, `<tab>`, `<header2>`, 
 It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like `<font>`,
 `<a>`, `<u>`, `<i>` and `<img>`, and is a subset of BBML.
 
+- BBML's `<a href="…">` is the link for everything (`text://`, `chatcmd://`, `itemref://`, …).
+  In AoXML, every kind of link has its own element instead.
 - **Import:** `BbmlImporter` reads BBML and therefore plain AOML too, and produces the same
   document tree. Colours (`<font color=…>`) stay colours; they are never guessed back into
   semantic styles. See the `legacy.bbml` files in `tests/Samples` for what it has to understand.

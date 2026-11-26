@@ -1,4 +1,6 @@
-<popup title="Banlist (2)">
+<popup window="banlist">Banlist (2)</popup>
+
+<window id="banlist" title="Banlist (2)">
 	<section title="Evilguy">
 		<field name="Date">2026-11-20 14:02</field>
 		<field name="By">Nadyita</field>
@@ -9,4 +11,4 @@
 		<field name="By">Nadyita</field>
 		<field name="Ban ends">Never</field>
 	</section>
-</popup>
+</window>

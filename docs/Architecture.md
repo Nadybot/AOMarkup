@@ -19,9 +19,9 @@ library knows about a specific bot: everything bot-specific comes in through the
 `RenderContext`.
 
 ## Document
-`Document` = the message body (a `Fragment`) + the windows referenced from it
-(`array<string,Window>`). Popups in the body are `PopupLink` nodes that reference a
-window by id. Windows may contain further `PopupLink`s (nesting).
+`Document` = the message body (a `Fragment`) + its windows (`array<string,Window>`).
+Popups in the body are `PopupLink` nodes that reference a window by id. Windows never
+contain `PopupLink`s: there is no nesting.
 
 ## Nodes (`AO\Markup\Node`)
 Every node is an immutable value object. There are three kinds:
@@ -30,7 +30,8 @@ Every node is an immutable value object. There are three kinds:
   `ListBlock`/`ListItem`, `Indent`, `Heading`, `Center`, `HorizontalRule`, `PageBreak`,
   `Keep`, `Repeat`
 - **Inline nodes**: `Text`, `LineBreak`, `Style`, `Color`, `Image`, `Placeholder`,
-  links (`ItemLink`, `NanoLink`, `SkillLink`, `CharLink`, `CommandLink`, `UrlLink`, `PopupLink`)
+  links (`ItemLink`, `NanoLink`, `SkillLink`, `CharLink`, `CommandLink`, `ClientCommandLink`,
+  `WaypointLink`, `UrlLink`, `PopupLink`)
 - **Widget nodes**: `WidgetNode`, which wraps a `Widget` instance plus its children
 
 Block containers (the body, `Window`, `Section`, `ListItem`, `TableCell`, `Indent`,
@@ -103,7 +104,7 @@ Everything bot-specific:
 
 | Part | Purpose |
 |---|---|
-| `Theme` | Maps style names (`highlight`, `header`, `clan`, …) to colours |
+| `Theme` | Maps style names (`strong`, `header`, `clan`, …) to colours |
 | `PlaceholderProvider` | Values for `myname`, `symbol`, `myguild`, `var` |
 | `LinkResolver` | URLs for items, nanos etc. outside the game |
 | `LoggerInterface` | Warnings |

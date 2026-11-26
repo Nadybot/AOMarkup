@@ -56,11 +56,11 @@ final class AoXmlParserTest extends TestCase {
 			<<<'TREE'
 				Paragraph
 				  Text "a "
-				  Style highlight
+				  Style strong
 				    Text "b"
 				  Text " c"
 				TREE,
-			'a <highlight>b </highlight> c'
+			'a <strong>b </strong> c'
 		);
 	}
 
@@ -118,11 +118,11 @@ final class AoXmlParserTest extends TestCase {
 			<<<'TREE'
 				Paragraph
 				  Text "<blink>"
-				  Style highlight
+				  Style strong
 				    Text "x"
 				  Text "</blink>"
 				TREE,
-			'<blink><highlight>x</highlight></blink>'
+			'<blink><strong>x</strong></blink>'
 		);
 		$this->assertWarning('Unknown element <blink>');
 	}
@@ -132,14 +132,14 @@ final class AoXmlParserTest extends TestCase {
 			<<<'TREE'
 				Section title="S"
 				  Paragraph
-				    Style highlight
+				    Style strong
 				      Text "x"
 				Paragraph
 				  Text "after"
 				TREE,
-			'<section title="S"><highlight>x</section>after'
+			'<section title="S"><strong>x</section>after'
 		);
-		$this->assertWarning('<highlight> is not closed');
+		$this->assertWarning('<strong> is not closed');
 	}
 
 	public function testStrayClosingTagIsIgnored(): void {
@@ -237,6 +237,58 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertNoWarnings();
 	}
 
+	public function testCommandChannels(): void {
+		$this->assertTree(
+			<<<'TREE'
+				Paragraph
+				  CommandLink command="demo" via=priv
+				  Text " "
+				  CommandLink command="demo" via=org
+				    Text "Demo"
+				TREE,
+			'<cmd via="priv">demo</cmd> <cmd via="org" command="demo">Demo</cmd>'
+		);
+		$this->parse('<cmd via="raid">x</cmd>');
+		$this->assertWarning('Invalid via="raid"');
+	}
+
+	public function testClientCommands(): void {
+		$this->assertTree(
+			<<<'TREE'
+				Paragraph
+				  ClientCommandLink command="/assist Nady"
+				  Text " "
+				  ClientCommandLink command="/macro Nady /assist Nady"
+				    Text "Macro"
+				TREE,
+			'<client>/assist Nady</client> <client command="/macro Nady /assist Nady">Macro</client>'
+		);
+		$this->assertNoWarnings();
+	}
+
+	public function testAttributesArePlainText(): void {
+		$this->assertTree(
+			"Paragraph\n  ClientCommandLink command=\"/g <myname> hi\"\n    Text \"x\"",
+			'<client command="/g &lt;myname&gt; hi">x</client>'
+		);
+	}
+
+	public function testWaypoints(): void {
+		$this->assertTree(
+			"Paragraph\n  WaypointLink x=123 y=456 playfield=585\n    Text \"Camp\"",
+			'<waypoint x="123" y="456" pf="585">Camp</waypoint>'
+		);
+		$this->assertNoWarnings();
+		$this->assertTree("Paragraph\n  Text \"Camp\"", '<waypoint x="123" pf="585">Camp</waypoint>');
+		$this->assertWarning('<waypoint> needs numeric x, y and pf');
+	}
+
+	public function testHintsForForeignElements(): void {
+		$this->parse('<a href="text://x">x</a> <highlight>y</highlight>');
+		$this->assertWarning('Unknown element <a> taken as text; AoXML has no <a>');
+		$this->assertWarning('Unknown element <highlight> taken as text; use <strong>');
+	}
+
 	public function testChars(): void {
 		$this->assertTree(
 			<<<'TREE'
@@ -323,7 +375,7 @@ final class AoXmlParserTest extends TestCase {
 	}
 
 	public function testBlockElementInsideLine(): void {
-		$this->assertTree("Paragraph\n  Style highlight\n    Text \"x\"", '<highlight><section title="S">x</section></highlight>');
+		$this->assertTree("Paragraph\n  Style strong\n    Text \"x\"", '<strong><section title="S">x</section></strong>');
 		$this->assertWarning('Block element <section> inside a line');
 	}
 
@@ -345,53 +397,28 @@ final class AoXmlParserTest extends TestCase {
 	// Popups
 	// ------------------------------------------------------------------
 
-	public function testPopupsAreHoistedInDocumentOrder(): void {
+	public function testWindowsAndPopups(): void {
 		$doc = $this->parse(
-			'<popup title="Outer" name="nb-outer">'
-			. 'See <popup title="Inner" label="here">inner</popup>'
-			. '</popup> and <popup title="Second">2</popup>'
+			"There are <popup window=\"bans\"><strong>2</strong> bans</popup>, see <popup window=\"bans\">here</popup>.\n"
+			. "<window id=\"bans\" title=\"Banlist (2)\">\n\tx\n</window>\n"
+			. '<window id="help" title="Help">y</window>'
 		);
 		$this->assertSame(
 			<<<'TREE'
 				Paragraph
-				  PopupLink ref="w1"
-				    Text "Outer"
-				  Text " and "
-				  PopupLink ref="w3"
-				    Text "Second"
-				Window w1 "Outer" name="nb-outer"
-				  Paragraph
-				    Text "See "
-				    PopupLink ref="w2"
-				      Text "here"
-				Window w2 "Inner"
-				  Paragraph
-				    Text "inner"
-				Window w3 "Second"
-				  Paragraph
-				    Text "2"
-				TREE,
-			TreeDump::document($doc)
-		);
-		$this->assertNoWarnings();
-	}
-
-	public function testCanonicalWindowForm(): void {
-		$doc = $this->parse(
-			"<popup ref=\"w1\">Banlist</popup>\n<window id=\"w1\" title=\"Banlist (2)\">x</window>\n<popup title=\"New\">y</popup>"
-		);
-		$this->assertSame(
-			<<<'TREE'
-				Paragraph
-				  PopupLink ref="w1"
-				    Text "Banlist"
-				Paragraph
-				  PopupLink ref="w2"
-				    Text "New"
-				Window w1 "Banlist (2)"
+				  Text "There are "
+				  PopupLink window="bans"
+				    Style strong
+				      Text "2"
+				    Text " bans"
+				  Text ", see "
+				  PopupLink window="bans"
+				    Text "here"
+				  Text "."
+				Window bans "Banlist (2)"
 				  Paragraph
 				    Text "x"
-				Window w2 "New"
+				Window help "Help"
 				  Paragraph
 				    Text "y"
 				TREE,
@@ -400,14 +427,35 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertNoWarnings();
 	}
 
-	public function testGeneratedIdsSkipExplicitOnes(): void {
-		$doc = $this->parse('<popup title="A">a</popup><window id="w1" title="B">b</window>');
-		$this->assertSame(['w2', 'w1'], array_keys($doc->windows));
+	public function testPopupInsideWindowIsText(): void {
+		$doc = $this->parse('<window id="a" title="A">See <popup window="b">B</popup></window><window id="b" title="B">b</window>');
+		$this->assertSame("Window a \"A\"\n  Paragraph\n    Text \"See B\"\nWindow b \"B\"\n  Paragraph\n    Text \"b\"", TreeDump::document($doc));
+		$this->assertWarning('Windows cannot be nested');
+	}
+
+	public function testWindowInsideElementIsUsedWithWarning(): void {
+		$doc = $this->parse('<section title="S"><window id="a" title="A">a</window></section><strong><window id="b" title="B">b</window></strong>');
+		$this->assertSame(['a', 'b'], array_keys($doc->windows));
+		$this->assertWarning('<window> is only allowed at the top level');
+	}
+
+	public function testWindowErrors(): void {
+		$doc = $this->parse('<window title="A">a</window><window id="x" title="X">1</window><window id="x" title="Y">2</window>');
+		$this->assertSame(['x'], array_keys($doc->windows));
+		$this->assertSame('X', $doc->windows['x']->title);
+		$this->assertWarning('<window> without id cannot be opened');
+		$this->assertWarning('Duplicate window id "x"');
 	}
 
 	public function testMissingWindow(): void {
-		$this->parse('<popup ref="nope">x</popup>');
-		$this->assertWarning('<popup ref="nope"> refers to a window that does not exist');
+		$this->assertTree("Paragraph\n  PopupLink window=\"nope\"\n    Text \"x\"", '<popup window="nope">x</popup>');
+		$this->assertWarning('<popup window="nope"> refers to a window that does not exist');
+	}
+
+	public function testOldPopupFormIsRejected(): void {
+		$this->parse('<popup title="Old">content</popup>');
+		$this->assertWarning('<popup> needs the attribute "window"');
+		$this->assertWarning('Unknown attribute "title" on <popup>');
 	}
 
 	// ------------------------------------------------------------------

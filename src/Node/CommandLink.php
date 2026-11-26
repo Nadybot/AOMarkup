@@ -7,6 +7,7 @@ final class CommandLink extends Container implements InlineNode {
 	public function __construct(
 		public readonly string $command,
 		public readonly CommandDisplay $show=CommandDisplay::Command,
+		public readonly CommandChannel $via=CommandChannel::Tell,
 		Node ...$children,
 	) {
 		parent::__construct(...$children);

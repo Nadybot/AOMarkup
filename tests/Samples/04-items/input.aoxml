@@ -1,11 +1,13 @@
-<popup title="Item Search Results (3)">
+<popup window="items">Item Search Results (3)</popup>
+
+<window id="items" title="Item Search Results (3)">
 	<ul>
 		<li><item id="247115" ql="1">Basic First Aid Kit</item> (QL 1)</li>
 		<li>First Aid Kit - QL <match><item id="246800/246801" ql="1">1</item>, <item id="246800/246801" ql="100">100</item></match>, <item id="246802/246803" ql="200">200</item></li>
 		<li>Prototype First Aid Kit <unavailable/> - QL <selected><item id="299000" ql="50">50</item></selected></li>
 	</ul>
 
-	<highlight>*Results have been limited to the first 3 results.</highlight>
+	<strong>*Results have been limited to the first 3 results.</strong>
 
 	Item DB rips created using the AODB tool
-</popup>
+</window>

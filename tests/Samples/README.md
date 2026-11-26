@@ -74,7 +74,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 ### BBML (relays)
 - Same layout as AOML (same metric, same padding).
 - Theme colours become their BBML names, closed with `<end>`: `<header>`, `<header2>`,
-  `<highlight>`, `<green>`, `<neutral>`, … `<syntax>` becomes `<highlight>`, explicit `<color>`
+  `<highlight>`, `<green>`, `<neutral>`, … `<strong>` and `<syntax>` become `<highlight>`, explicit `<color>`
   stays `<font color=…>…</font>`.
 - The popup starts with the sender's window colour as `<font color=…>`, like `Text::makeBlob()`
   in Nadybot does.
@@ -87,7 +87,8 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - ANSI: window colour as base colour, links blue and underlined, item links as OSC 8 hyperlinks.
 
 ### HTML
-- No inline colours: everything is a CSS class (`aom-highlight`, `aom-green`, `aom-clan`, …).
+- No inline colours: everything is a CSS class (`aom-green`, `aom-clan`, …). `<strong>` becomes
+  `<strong class="aom-strong">`.
 - Fields: `<dl class="aom-fields">`, numeric groups get `aom-numeric`, units `aom-unit`.
 - Windows: `<section class="aom-window" id="…">`, linked from the message.
 - `<slider>`: native renderer with `<meter>`.
@@ -99,7 +100,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   description.
 - Sections in the description: a `**title**` line, followed by the content.
 - A trailing plain-text paragraph becomes the embed footer.
-- `highlight` → `**bold**`, `<match>` → `__underline__`, `<selected>` → `**bold**`, `<i>` → `*italic*`,
+- `<strong>` → `**bold**`, `<match>` → `__underline__`, `<selected>` → `**bold**`, `<i>` → `*italic*`,
   colours are dropped.
 - Tables and the slider become code blocks (same layout as plain text).
 - `<syntax>` and `<cmd>` become inline code, items become `[name](url)`, `<indent>` becomes `> `.

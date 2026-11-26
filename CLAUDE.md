@@ -20,9 +20,14 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   Only known void tags may omit the slash.
 - No `<tab>`, no `<black>` padding, no layout with spaces. Use `<section>`, `<field>`,
   `<table>`, `<ul>`/`<ol>`, `<indent>`. Leading whitespace in the source is not significant.
-- Game objects are semantic elements (`<item>`, `<nano>`, `<skill>`, `<char>`, `<cmd>`, `<url>`).
-- Popups are hoisted into separate windows (`Document::$windows`), like the format Nadybot
-  already sends to its web client; `<a href="text://…">` is legacy input only.
+- Game objects are semantic elements (`<item>`, `<nano>`, `<skill>`, `<char>`, `<waypoint>`,
+  `<cmd>`, `<client>`, `<url>`). AoXML has no `<a>`.
+- Emphasis is `<strong>`, not `<highlight>` (the theme colour is still called highlight).
+- Attribute values are always plain text; placeholders only exist as elements in content.
+  Bot commands through a channel use `<cmd via="priv|org">`.
+- Windows are defined at the top level (`<window id title>`) and opened with
+  `<popup window="id">link text</popup>` from the message only. No nesting, no window names.
+  In the tree they are `Document::$windows`, like the format Nadybot sends to its web client.
 - BBML (Budabot markup: `<highlight>`, `<end>`, `<tab>`, …) is not AOML. Funcom AOML is a
   subset of BBML; both are read by `BbmlImporter`, not by `AoXmlParser`. Colours are never
   guessed back into semantic styles.

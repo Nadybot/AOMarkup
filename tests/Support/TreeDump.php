@@ -30,8 +30,7 @@ final class TreeDump {
 			self::node($node, 0, $lines);
 		}
 		foreach ($document->windows as $window) {
-			$name = $window->name === null ? '' : ' name=' . json_encode($window->name);
-			$lines []= "Window {$window->id} " . json_encode($window->title, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . $name;
+			$lines []= "Window {$window->id} " . json_encode($window->title, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 			foreach ($window->children as $node) {
 				self::node($node, 1, $lines);
 			}
