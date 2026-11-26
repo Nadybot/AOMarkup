@@ -1,18 +1,20 @@
-{
-    "content": "",
-    "embeds": [
-        {
-            "title": "Banlist (2)",
-            "fields": [
-                {
-                    "name": "Evilguy",
-                    "value": "Date: **2026-11-20 14:02**\nBy: **Nadyita**\nBan ends: **6 days, 3 hrs.**\nReason: **Ninja-looting in \"APF\"**"
-                },
-                {
-                    "name": "Badguy",
-                    "value": "By: **Nadyita**\nBan ends: **Never**"
-                }
-            ]
-        }
-    ]
-}
+[
+    {
+        "content": "",
+        "embeds": [
+            {
+                "title": "Banlist (2)",
+                "fields": [
+                    {
+                        "name": "Evilguy",
+                        "value": "Date: **2026-11-20 14:02**\nBy: **Nadyita**\nBan ends: **6 days, 3 hrs.**\nReason: **Ninja-looting in \"APF\"**"
+                    },
+                    {
+                        "name": "Badguy",
+                        "value": "By: **Nadyita**\nBan ends: **Never**"
+                    }
+                ]
+            }
+        ]
+    }
+]

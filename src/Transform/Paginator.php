@@ -55,12 +55,35 @@ final class Paginator {
 	) {
 	}
 
-	/** @return list<Document> */
+	/**
+	 * Split into pages of at most $maxLength bytes of the exporter's output
+	 *
+	 * @return list<Document>
+	 */
 	public function paginate(Document $document, Exporter $exporter, RenderContext $context, int $maxLength): array {
-		// Measure without logging, the same document is rendered many times
+		$size = static fn (Document $page, RenderContext $quiet): int => strlen($exporter->export($page, $quiet));
+		return $this->paginateWith(
+			$document,
+			$context,
+			$size,
+			static fn (Document $page, RenderContext $quiet): bool => $size($page, $quiet) <= $maxLength,
+		);
+	}
+
+	/**
+	 * Split into pages that each satisfy $fits, for targets with other limits than a length
+	 *
+	 * Both closures get a context without logging, because the same content is
+	 * rendered many times.
+	 *
+	 * @param Closure(Document,RenderContext):int  $size Size of a document, to find the largest window
+	 * @param Closure(Document,RenderContext):bool $fits Is this page within the limits of the target?
+	 *
+	 * @return list<Document>
+	 */
+	public function paginateWith(Document $document, RenderContext $context, Closure $size, Closure $fits): array {
 		$quiet = new RenderContext($context->placeholders, $context->theme, $context->links, new NullLogger());
-		$size = static fn (Document $page): int => strlen($exporter->export($page, $quiet));
-		if ($size($document) <= $maxLength) {
+		if ($fits($document, $quiet)) {
 			return [$document];
 		}
 
@@ -68,7 +91,7 @@ final class Paginator {
 		$window = null;
 		$largest = 0;
 		foreach ($document->windows as $candidate) {
-			$length = $size(new Document($document->body, [$candidate->id => $candidate]));
+			$length = $size(new Document($document->body, [$candidate->id => $candidate]), $quiet);
 			if ($length > $largest) {
 				[$window, $largest] = [$candidate, $length];
 			}
@@ -80,9 +103,10 @@ final class Paginator {
 
 		// Fill pages assuming the longest page numbers, then again with the real number of pages:
 		// that never needs more digits, so all pages still fit and are fuller
-		$fitsWith = fn (int $assumed): Closure => fn (Node ...$content): bool => $size(
-			$this->pageDocument($document, $window, array_values($content), $assumed, $assumed)
-		) <= $maxLength;
+		$fitsWith = fn (int $assumed): Closure => fn (Node ...$content): bool => $fits(
+			$this->pageDocument($document, $window, array_values($content), $assumed, $assumed),
+			$quiet
+		);
 		if (!$fitsWith(self::MAX_PAGES)()) {
 			$context->logger->warning('The message is too long even without the content of window "{id}"', ['id' => $window->id]);
 			return [$document];

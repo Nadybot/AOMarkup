@@ -23,4 +23,32 @@ final class Markdown {
 	public static function codeBlock(string $text): string {
 		return "```\n" . rtrim(str_replace('```', "`\u{200B}``", $text), "\n") . "\n```";
 	}
+
+	/**
+	 * Split text into chunks of at most $max characters, at line breaks where possible
+	 *
+	 * @return list<string>
+	 */
+	public static function chunks(string $text, int $max): array {
+		$chunks = [];
+		$current = '';
+		foreach (explode("\n", $text) as $line) {
+			while (mb_strlen($line) > $max) {
+				if ($current !== '') {
+					$chunks []= $current;
+					$current = '';
+				}
+				$chunks []= mb_substr($line, 0, $max);
+				$line = mb_substr($line, $max);
+			}
+			$candidate = $current === '' ? $line : "{$current}\n{$line}";
+			if (mb_strlen($candidate) > $max) {
+				$chunks []= $current;
+				$candidate = $line;
+			}
+			$current = $candidate;
+		}
+		$chunks []= $current;
+		return $chunks;
+	}
 }

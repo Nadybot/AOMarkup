@@ -112,13 +112,12 @@ final class DiscordRenderer {
 			if (count($intro) > 0) {
 				$embed['description'] = $this->blocks($intro);
 			}
-			$embed['fields'] = array_map(
-				fn (Node $section): array => [
-					'name' => $section instanceof Section ? $section->title : '',
-					'value' => $section instanceof Section ? $this->blocks($section->children) : '',
-				],
-				$blocks
-			);
+			$embed['fields'] = [];
+			foreach ($blocks as $section) {
+				if ($section instanceof Section) {
+					array_push($embed['fields'], ...$this->fields($section));
+				}
+			}
 		} else {
 			$description = $this->blocks([...$intro, ...$blocks]);
 			if ($description !== '') {
@@ -129,6 +128,20 @@ final class DiscordRenderer {
 			$embed['footer'] = ['text' => $this->plain($footer->children)];
 		}
 		return $embed;
+	}
+
+	/**
+	 * A section as embed field; values that are too long continue in further fields, like Nadybot does
+	 *
+	 * @return list<array{name:string,value:string}>
+	 */
+	private function fields(Section $section): array {
+		$value = $this->blocks($section->children);
+		$fields = [];
+		foreach (Markdown::chunks($value === '' ? '_ _' : $value, Limits::FIELD_VALUE) as $i => $chunk) {
+			$fields []= ['name' => $section->title . ($i > 0 ? ' (continued)' : ''), 'value' => $chunk];
+		}
+		return $fields;
 	}
 
 	/**

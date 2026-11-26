@@ -35,7 +35,7 @@ then make the code follow.
 - Links: `TemplateLinkResolver` defaults (`https://auno.org/ao/db.php?id={id}&ql={ql}`)
 - Pagination: AOML and BBML are split into pages of at most 7 500 bytes (Nadybot's default
   `max_blob_size`); in the expected files, the pages are separated by a line
-  `----- next message -----`. The other targets are not paginated.
+  `----- next message -----`. Discord is split by its own limits (see below), the other targets are not paginated.
 
 ## ANSI notation
 Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation that
@@ -153,8 +153,13 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   colours are dropped.
 - Tables and the slider become code blocks (same layout as plain text).
 - `<syntax>` and `<cmd>` become inline code, items become `[name](url)`, `<indent>` becomes `> `.
-- The message is the `content` (empty if it is only a link to a window); every window is an
-  embed. An intro before the sections of a field embed becomes its description.
+- The output is a list of messages. The message is the `content` (empty if it is only a link to a
+  window); every window is an embed.
+- Discord's limits (content 2 000, title 256, description 4 096, 25 fields of 1 024, footer 2 048,
+  6 000 characters per message) are kept by paginating like the game targets: every message is
+  a page with `(Page 1 / 2)` in the title, tables are split between rows with the header in every
+  code block. A field value that is too long continues in further fields named
+  `Title (continued)`, split at line breaks (like Nadybot). An intro before the sections of a field embed becomes its description.
 - Blocks are separated by an empty line, except after a code block (Discord sets it apart
   anyway) and before an `<indent>` that continues a paragraph.
 - Fields: `Key: **value** unit`; further values of a key on their own lines.

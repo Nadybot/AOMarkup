@@ -1,12 +1,14 @@
-{
-    "content": "",
-    "embeds": [
-        {
-            "title": "Item Search Results (3)",
-            "description": "- [Basic First Aid Kit](https://auno.org/ao/db.php?id=247115&ql=1) (QL 1)\n- First Aid Kit - QL __[1](https://auno.org/ao/db.php?id=246800&ql=1), [100](https://auno.org/ao/db.php?id=246800&ql=100)__, [200](https://auno.org/ao/db.php?id=246802&ql=200)\n- Prototype First Aid Kit (!) - QL **[50](https://auno.org/ao/db.php?id=299000&ql=50)**\n\n**\\*Results have been limited to the first 3 results.**",
-            "footer": {
-                "text": "Item DB rips created using the AODB tool"
+[
+    {
+        "content": "",
+        "embeds": [
+            {
+                "title": "Item Search Results (3)",
+                "description": "- [Basic First Aid Kit](https://auno.org/ao/db.php?id=247115&ql=1) (QL 1)\n- First Aid Kit - QL __[1](https://auno.org/ao/db.php?id=246800&ql=1), [100](https://auno.org/ao/db.php?id=246800&ql=100)__, [200](https://auno.org/ao/db.php?id=246802&ql=200)\n- Prototype First Aid Kit (!) - QL **[50](https://auno.org/ao/db.php?id=299000&ql=50)**\n\n**\\*Results have been limited to the first 3 results.**",
+                "footer": {
+                    "text": "Item DB rips created using the AODB tool"
+                }
             }
-        }
-    ]
-}
+        ]
+    }
+]

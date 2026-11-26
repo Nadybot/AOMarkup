@@ -1,9 +1,11 @@
-{
-    "content": "",
-    "embeds": [
-        {
-            "title": "Help (aggdef)",
-            "description": "**'aggdef' command**\nFind out where to set your aggdef slider to be 1/1\n`!aggdef <attack time> <recharge time> <init value>`\n\nIf you are lazy, just use\n> `!weapon <drop weapon into chat>`\n\nExample:\n> Your weapon has an attack time of **1.2** seconds and a recharge time of **1.5** seconds.\n> Your melee/ranged init is **1200**:\n> `/tell Nadybot !aggdef 1.2 1.5 1200`\n\n*See `!help syntax` for an explanation of the command syntax*"
-        }
-    ]
-}
+[
+    {
+        "content": "",
+        "embeds": [
+            {
+                "title": "Help (aggdef)",
+                "description": "**'aggdef' command**\nFind out where to set your aggdef slider to be 1/1\n`!aggdef <attack time> <recharge time> <init value>`\n\nIf you are lazy, just use\n> `!weapon <drop weapon into chat>`\n\nExample:\n> Your weapon has an attack time of **1.2** seconds and a recharge time of **1.5** seconds.\n> Your melee/ranged init is **1200**:\n> `/tell Nadybot !aggdef 1.2 1.5 1200`\n\n*See `!help syntax` for an explanation of the command syntax*"
+            }
+        ]
+    }
+]
