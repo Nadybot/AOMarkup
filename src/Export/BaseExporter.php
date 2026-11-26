@@ -14,6 +14,11 @@ abstract class BaseExporter implements Exporter {
 		return $this;
 	}
 
+	/** @return list<class-string<Widget>> The widgets this exporter renders natively */
+	protected function getNativeWidgets(): array {
+		return array_keys($this->nativeRenderers);
+	}
+
 	/** @return ?NativeRenderer<Widget> */
 	protected function getNativeRenderer(Widget $widget): ?NativeRenderer {
 		return $this->nativeRenderers[$widget::class] ?? null;

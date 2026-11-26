@@ -127,6 +127,18 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - `<footer>`: `<footer class="aom-footer">`.
 - `<choice>`: native renderer, `<select class="aom-choice" data-cmd="…">` with one `<option>` per
   option; the web UI sends `data-cmd` + space + value.
+- The message is `<div class="aom-message">`, followed by every window. Containers whose content
+  is a single paragraph (message, `<indent>`, `<center>`, `<footer>`, list items, table cells) write
+  it without `<p>`; sections and windows always use `<p>`.
+- Header rows (all cells `<th>`) at the start of a table go into `<thead>`, the rest into `<tbody>`.
+  Alignment is a class (`aom-right`, `aom-center`), left is the default.
+- Links outside the game: items and nanos are `<a href>` (`LinkResolver`), `<url>` is
+  `<a class="aom-url">`. Things only the game understands carry their data for the web UI:
+  `<span class="aom-skill" data-skill>`, `aom-char` (`data-char`), `aom-client` (`data-cmd`),
+  `aom-waypoint` (`data-x`, `data-y`, `data-pf`), images as `<span class="aom-image" data-src="rdb:…">`.
+  `via="priv|org"` adds `data-via` to commands and choices.
+- `<color>` is the only inline colour: `<span class="aom-color" style="color:#…">`.
+- `<h1>`/`<h2>` become `<h3>`/`<h4>` (the window title is `<h1>`, sections are `<h2>`).
 
 ### Discord
 - A window becomes an embed. Sections become embed fields if the window consists only of an
