@@ -26,7 +26,7 @@ contain `PopupLink`s: there is no nesting.
 ## Nodes (`AO\Markup\Node`)
 Every node is an immutable value object. There are three kinds:
 
-- **Block nodes**: `Paragraph`, `Section`, `FieldGroup`/`Field`, `Table`/`TableRow`/`TableCell`,
+- **Block nodes**: `Paragraph`, `Section`, `FieldList`/`Field`/`FieldValue`, `Table`/`TableRow`/`TableCell`,
   `ListBlock`/`ListItem`, `Indent`, `Heading`, `Center`, `HorizontalRule`, `PageBreak`,
   `Keep`, `Repeat`
 - **Inline nodes**: `Text`, `LineBreak`, `Style`, `Color`, `Image`, `Placeholder`,
@@ -36,7 +36,7 @@ Every node is an immutable value object. There are three kinds:
 
 Block containers (the body, `Window`, `Section`, `ListItem`, `TableCell`, `Indent`,
 `Center`, `Keep`, `Repeat`) contain block nodes only: inline content in them is always
-wrapped in a `Paragraph`. `Field`, `Heading` and all inline nodes contain inline nodes only.
+wrapped in a `Paragraph`. `Field::$name`, `FieldValue`, `Heading` and all inline nodes contain inline nodes only.
 
 ## Importers (`AO\Markup\Import`)
 `Importer::import(string): Document`. Importers never produce widgets: guessing a
@@ -49,7 +49,6 @@ Pure `Document → Document` steps, combined per exporter:
 |---|---|
 | `PlaceholderResolver` | Replaces `<myname/>`, `<symbol/>`, … with text |
 | `WidgetExpander` | Replaces widgets without a native renderer by their `fallback()` |
-| `FieldGrouper` | Groups consecutive `Field`s into a `FieldGroup` |
 | `Paginator` | Splits a document into several, measured in the target format; ends pages only where needed, and only at `<pagebreak/>`s if there are any (`docs/AoXML.md` §2.2) |
 
 ## Exporters (`AO\Markup\Export`)

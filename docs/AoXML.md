@@ -29,9 +29,9 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 - An empty line separates paragraphs.
 - Leading whitespace on a line is **not significant**. Indent the source as you like.
 - Runs of spaces collapse into a single space. Spaces are never a layout tool;
-  use tables, fields, lists or `<indent>` instead.
+  use tables, field lists (`<dl>`), lists or `<indent>` instead.
 - Line breaks directly after an opening or before/after a closing **block** element
-  are not significant. Inside element-only containers (`<table>`, `<tr>`, `<ul>`, `<ol>`)
+  are not significant. Inside element-only containers (`<table>`, `<tr>`, `<ul>`, `<ol>`, `<dl>`)
   all whitespace is ignored.
 - Inside an inline element, an empty line is just two line breaks; paragraphs can only
   be separated at the block level.
@@ -41,7 +41,9 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 | Element | Attributes | Meaning |
 |---|---|---|
 | `<section>` | `title` | A titled block. Replaces `<header2>` + `<tab>`-indented lines. Preferred page-break position if the window has no `<pagebreak/>`; kept together when possible. |
-| `<field>` | `name`, `unit`? | A key/value line. Consecutive fields form an aligned group. The value is highlighted; `unit` follows it unhighlighted. If all values of a group are numeric, they are right-aligned. |
+| `<dl>` | | A list of key/value fields, aligned together. Contains `<dt>` and `<dd>` only. If all values of a list are numeric, they are right-aligned. |
+| `<dt>` | | A key. Starts a new field; every field has one key. |
+| `<dd>` | `unit`? | A value of the key before it. The value is emphasised; `unit` follows it unemphasised. A key may have several values: the first is next to the key, the others below it in the same column. |
 | `<table>` | `border`? | A table. Without `border` it is a pure layout table. |
 | `<tr>` | | A row. |
 | `<th>`, `<td>` | `align`?, `colspan`? | Header and data cells. `align` is `left`, `right` or `center`, see [2.1](#21-table-alignment). Rows made only of `<th>` are repeated on every page. |
@@ -72,6 +74,16 @@ column; a `<td align>` overrides it for that cell.
   that has one.
 - A cell with `colspan` does not inherit; it is `left` unless it has its own `align`.
 - Everything else is `left`, in particular every cell of a table without `<th>`.
+
+```xml
+<dl>
+	<dt>Attack</dt><dd unit="second(s)">1.2</dd>
+	<dt>Alts</dt><dd>Nadyita</dd><dd>Nadybot</dd>
+</dl>
+```
+
+A `<dd>` before the first `<dt>`, a `<dt>` without `<dd>` and text outside of `<dt>`/`<dd>`
+are reported as warnings.
 
 ### 2.2 Pagination
 Targets with a size limit (AOML, BBML, lepanel) split a window into several pages. The source

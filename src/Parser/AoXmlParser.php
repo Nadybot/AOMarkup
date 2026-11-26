@@ -16,6 +16,8 @@ use AO\Markup\Node\{
 	CommandDisplay,
 	CommandLink,
 	Field,
+	FieldList,
+	FieldValue,
 	Fragment,
 	Heading,
 	HorizontalRule,
@@ -63,7 +65,7 @@ final class AoXmlParser implements Importer {
 
 	/** Elements that start on their own line */
 	private const BLOCK = [
-		'section', 'field', 'table', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'indent',
+		'section', 'dl', 'dt', 'dd', 'table', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'indent',
 		'h1', 'h2', 'center', 'hr', 'pagebreak', 'keep', 'repeat', 'window',
 	];
 
@@ -258,11 +260,7 @@ final class AoXmlParser implements Importer {
 	private function block(RawElement $element, bool $root=false): array {
 		$nodes = match ($element->name) {
 			'section' => [new Section($this->string($element, 'title', ''), ...$this->blocks($element->children))],
-			'field' => [new Field(
-				$this->string($element, 'name', ''),
-				$this->optionalString($element, 'unit'),
-				...$this->inline($element->children)
-			)],
+			'dl' => [$this->fieldList($element)],
 			'h1', 'h2' => [new Heading($element->name === 'h1' ? 1 : 2, ...$this->inline($element->children))],
 			'table' => [$this->table($element)],
 			'ul', 'ol' => [$this->list($element)],
@@ -273,7 +271,7 @@ final class AoXmlParser implements Importer {
 			'hr' => [new HorizontalRule()],
 			'pagebreak' => [new PageBreak()],
 			'window' => $this->window($element, $root),
-			'tr', 'th', 'td', 'li' => $this->misplaced($element),
+			'tr', 'th', 'td', 'li', 'dt', 'dd' => $this->misplaced($element),
 			default => $this->widget($element, true),
 		};
 		$this->checkAttributes($element);
@@ -282,7 +280,11 @@ final class AoXmlParser implements Importer {
 
 	/** @return list<Node> */
 	private function misplaced(RawElement $element): array {
-		$parent = in_array($element->name, ['th', 'td', 'tr'], true) ? 'table' : 'ul> or <ol';
+		$parent = match ($element->name) {
+			'th', 'td', 'tr' => 'table',
+			'dt', 'dd' => 'dl',
+			default => 'ul> or <ol',
+		};
 		$this->warn($element->line, "<{$element->name}> outside of <{$parent}>, using its content only");
 		foreach (array_keys($element->attributes) as $attribute) {
 			$element->get($attribute);
@@ -311,6 +313,49 @@ final class AoXmlParser implements Importer {
 		$this->inWindow = $inWindow;
 		$this->windows[$id] = new Window($id, $title, ...$children);
 		return [];
+	}
+
+	/** A <dl>: every <dt> starts a field, the following <dd>s are its values */
+	private function fieldList(RawElement $element): FieldList {
+		/** @var list<list<Node>> */
+		$names = [];
+
+		/** @var list<list<FieldValue>> */
+		$values = [];
+
+		/** @var list<int> */
+		$lines = [];
+		foreach ($this->elementOnly($element) as $child) {
+			if ($child instanceof RawElement && $child->name === 'dt') {
+				$names []= $this->inline($child->children);
+				$values []= [];
+				$lines []= $child->line;
+				$this->checkAttributes($child);
+				continue;
+			}
+			if (count($names) === 0) {
+				$this->warn($element->line, '<dl> must start with a <dt>, using a field without name');
+				$names []= [];
+				$values []= [];
+				$lines []= $element->line;
+			}
+			$last = count($values) - 1;
+			if ($child instanceof RawElement && $child->name === 'dd') {
+				$values[$last] []= new FieldValue($this->optionalString($child, 'unit'), ...$this->inline($child->children));
+				$this->checkAttributes($child);
+				continue;
+			}
+			$this->warn($element->line, 'Content of <dl> outside of <dt> or <dd>, using it as a value');
+			$values[$last] []= new FieldValue(null, ...$this->inline([$child]));
+		}
+		$fields = [];
+		foreach ($names as $i => $name) {
+			if (count($values[$i]) === 0) {
+				$this->warn($lines[$i], '<dt> without <dd>');
+			}
+			$fields []= new Field($name, ...$values[$i]);
+		}
+		return new FieldList(...$fields);
 	}
 
 	private function table(RawElement $element): Table {

@@ -2,13 +2,17 @@
 
 <window id="banlist" title="Banlist (2)">
 	<section title="Evilguy">
-		<field name="Date">2026-11-20 14:02</field>
-		<field name="By">Nadyita</field>
-		<field name="Ban ends">6 days, 3 hrs.</field>
-		<field name="Reason">Ninja-looting in "APF"</field>
+		<dl>
+			<dt>Date</dt><dd>2026-11-20 14:02</dd>
+			<dt>By</dt><dd>Nadyita</dd>
+			<dt>Ban ends</dt><dd>6 days, 3 hrs.</dd>
+			<dt>Reason</dt><dd>Ninja-looting in "APF"</dd>
+		</dl>
 	</section>
 	<section title="Badguy">
-		<field name="By">Nadyita</field>
-		<field name="Ban ends">Never</field>
+		<dl>
+			<dt>By</dt><dd>Nadyita</dd>
+			<dt>Ban ends</dt><dd>Never</dd>
+		</dl>
 	</section>
 </window>

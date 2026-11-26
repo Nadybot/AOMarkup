@@ -1,17 +1,21 @@
 <popup window="aggdef">Agg/Def Results</popup>
 
 <window id="aggdef" title="Agg/Def Results">
-	<field name="Attack" unit="second(s)">1.2</field>
-	<field name="Recharge" unit="second(s)">1.7</field>
-	<field name="Init Skill">300</field>
+	<dl>
+		<dt>Attack</dt><dd unit="second(s)">1.2</dd>
+		<dt>Recharge</dt><dd unit="second(s)">1.7</dd>
+		<dt>Init Skill</dt><dd>300</dd>
+	</dl>
 
 	You must set your AGG bar at <strong>73% (6)</strong> to wield your weapon at <strong>1/1</strong>.
 	(<skill id="51">Agg/def-Slider</skill> should read <strong>45</strong>).
 
 	<section title="Init needed for max speed at">
-		<field name="Full Agg (100%)" unit="inits">135</field>
-		<field name="Neutral (87.5%)" unit="inits">210</field>
-		<field name="Full Def (0%)" unit="inits">1170</field>
+		<dl>
+			<dt>Full Agg (100%)</dt><dd unit="inits">135</dd>
+			<dt>Neutral (87.5%)</dt><dd unit="inits">210</dd>
+			<dt>Full Def (0%)</dt><dd unit="inits">1170</dd>
+		</dl>
 	</section>
 
 	<slider pos="73" left="1170 DEF" right="AGG 135" marker="You: 300"/>

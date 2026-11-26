@@ -18,7 +18,7 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   `<keep>`, `<repeat>`), not a copy of any target format.
 - Strict closing: `</green>` instead of `<end>`; `<tr>`, `<td>`, `<th>`, `<li>` are always closed.
   Only known void tags may omit the slash.
-- No `<tab>`, no `<black>` padding, no layout with spaces. Use `<section>`, `<field>`,
+- No `<tab>`, no `<black>` padding, no layout with spaces. Use `<section>`, `<dl>`,
   `<table>`, `<ul>`/`<ol>`, `<indent>`. Leading whitespace in the source is not significant.
 - Game objects are semantic elements (`<item>`, `<nano>`, `<skill>`, `<char>`, `<waypoint>`,
   `<cmd>`, `<client>`, `<url>`). AoXML has no `<a>`.

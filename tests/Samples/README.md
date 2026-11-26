@@ -4,9 +4,9 @@ Every directory is one real Nadybot command output:
 
 | Sample | Command | Shows |
 |---|---|---|
-| `01-banlist` | `!banlist` | sections, fields, quotes in popups |
+| `01-banlist` | `!banlist` | sections, field lists (`<dl>`), quotes in popups |
 | `02-history` | `!history Pigtail` | data table with border, colspan, colours in cells |
-| `03-aggdef`  | `!aggdef 1.2 1.7 300` | numeric fields with units, section, `<slider>` widget, skill link |
+| `03-aggdef`  | `!aggdef 1.2 1.7 300` | numeric field lists with units, section, `<slider>` widget, skill link |
 | `04-items`   | `!items first aid` | list, item links, `<match>`, `<selected>`, `<unavailable/>` |
 | `05-help`    | `!help aggdef` | `<syntax>`/`<param>`, `<cmd>`, `<indent>`, italic |
 
@@ -53,8 +53,10 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 ### All targets
 - A message that consists of a single popup link shows the window directly in targets
   without popups (ANSI, plain text, Discord).
-- Fields: the value is highlighted, `unit` follows unhighlighted. A group whose values are
+- Fields (`<dl>`): the value is emphasised, `unit` follows unemphasised. A group whose values are
   all numeric is right-aligned.
+- A field with several values shows the first next to the key and the others below it, in the
+  value column.
 - Sections: title in `header2`, content indented by one level (4 spaces) where indentation is
   done with spaces.
 

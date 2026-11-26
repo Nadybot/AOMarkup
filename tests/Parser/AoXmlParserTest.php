@@ -335,6 +335,56 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertNoWarnings();
 	}
 
+	public function testFieldLists(): void {
+		$this->assertTree(
+			<<<'TREE'
+				FieldList
+				  Field
+				    .name
+				      Text "Attack"
+				    FieldValue unit="second(s)"
+				      Text "1.2"
+				  Field
+				    .name
+				      Style strong
+				        Text "Nady"
+				      Text "'s alts"
+				    FieldValue
+				      Text "Nadyita"
+				    FieldValue
+				      Text "Nadybot"
+				TREE,
+			"<dl>\n\t<dt>Attack</dt><dd unit=\"second(s)\">1.2</dd>\n\t<dt><strong>Nady</strong>'s alts</dt>\n\t<dd>Nadyita</dd>\n\t<dd>Nadybot</dd>\n</dl>"
+		);
+		$this->assertNoWarnings();
+	}
+
+	public function testFieldListErrors(): void {
+		$this->assertTree(
+			<<<'TREE'
+				FieldList
+				  Field
+				    .name
+				    FieldValue
+				      Text "orphan"
+				    FieldValue
+				      Text "stray"
+				  Field
+				    .name
+				      Text "empty"
+				TREE,
+			'<dl><dd>orphan</dd>stray<dt>empty</dt></dl>'
+		);
+		$this->assertWarning('<dl> must start with a <dt>');
+		$this->assertWarning('outside of <dt> or <dd>');
+		$this->assertWarning('<dt> without <dd>');
+	}
+
+	public function testFieldOutsideList(): void {
+		$this->assertTree("Paragraph\n  Text \"x\"", '<dd>x</dd>');
+		$this->assertWarning('<dd> outside of <dl>');
+	}
+
 	public function testStrayContentInTableIsWrapped(): void {
 		$this->assertTree(
 			<<<'TREE'

@@ -2,13 +2,17 @@
 
 namespace AO\Markup\Node;
 
-/** A key/value line; the children are the value */
-final class Field extends Container implements BlockNode {
-	public function __construct(
-		public readonly string $name,
-		public readonly ?string $unit=null,
-		Node ...$children,
-	) {
-		parent::__construct(...$children);
+/** One key (<dt>) with its values (<dd>); the first value is next to the key, the others below it */
+final class Field implements Node {
+	/** @var list<Node> */
+	public readonly array $name;
+
+	/** @var list<FieldValue> */
+	public readonly array $values;
+
+	/** @param list<Node> $name Inline nodes */
+	public function __construct(array $name, FieldValue ...$values) {
+		$this->name = $name;
+		$this->values = array_values($values);
 	}
 }

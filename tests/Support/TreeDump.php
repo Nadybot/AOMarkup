@@ -22,7 +22,7 @@ use UnitEnum;
  */
 final class TreeDump {
 	/** Properties holding child nodes */
-	private const CHILD_PROPERTIES = ['children', 'rows', 'cells', 'items', 'fields'];
+	private const CHILD_PROPERTIES = ['children', 'rows', 'cells', 'items', 'fields', 'values'];
 
 	public static function document(Document $document): string {
 		$lines = [];
@@ -58,6 +58,12 @@ final class TreeDump {
 			$line .= ($name === 'text' || $name === 'style') ? " {$value}" : " {$name}={$value}";
 		}
 		$lines []= $line;
+		foreach (self::namedNodeLists($node) as $property => $children) {
+			$lines []= str_repeat('  ', $depth + 1) . ".{$property}";
+			foreach ($children as $child) {
+				self::node($child, $depth + 2, $lines);
+			}
+		}
 		foreach (self::CHILD_PROPERTIES as $property) {
 			if (!property_exists($node, $property)) {
 				continue;
@@ -72,6 +78,23 @@ final class TreeDump {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Public properties outside CHILD_PROPERTIES that hold nodes, like Field::$name
+	 *
+	 * @return array<string,list<Node>>
+	 */
+	private static function namedNodeLists(Node $node): array {
+		$result = [];
+		foreach ((new ReflectionObject($node))->getProperties(ReflectionProperty::IS_PUBLIC) as $prop) {
+			$value = $prop->getValue($node);
+			if (in_array($prop->getName(), self::CHILD_PROPERTIES, true) || !is_array($value)) {
+				continue;
+			}
+			$result[$prop->getName()] = array_values(array_filter($value, static fn (mixed $v): bool => $v instanceof Node));
+		}
+		return $result;
 	}
 
 	/** @return array<string,string> Non-default scalar properties, formatted */
@@ -90,6 +113,9 @@ final class TreeDump {
 				continue;
 			}
 			$value = $prop->getValue($object);
+			if (is_array($value)) {
+				continue;
+			}
 			if (array_key_exists($name, $defaults) && $defaults[$name] === $value) {
 				continue;
 			}
