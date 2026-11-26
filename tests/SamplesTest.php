@@ -109,6 +109,21 @@ final class SamplesTest extends TestCase {
 		$this->assertSame(TreeDump::document($document), TreeDump::document($reparsed));
 	}
 
+	/**
+	 * With table detection, samples with tables give expected-tables.aoxml, all others expected-import.aoxml
+	 *
+	 * The second half guards against tables found where there are none.
+	 */
+	#[DataProvider('provideSampleDirs')]
+	public function testImportWithTables(string $sample): void {
+		$dir = self::SAMPLE_DIR . "/{$sample}";
+		$file = is_file("{$dir}/expected-tables.aoxml") ? "{$dir}/expected-tables.aoxml" : "{$dir}/expected-import.aoxml";
+		$logger = TestLogger::create();
+		$document = (new BbmlImporter($logger, detectTables: true))->import(file_get_contents("{$dir}/legacy.bbml"));
+		$this->assertSame(file_get_contents($file), (new AoXmlSerializer())->export($document, self::context()));
+		$this->assertSame([], array_map(static fn ($r): string => (string)$r->message, $logger->records->all()));
+	}
+
 	/** Render a document; paginated formats give all pages, separated by PAGE_SEPARATOR */
 	public static function render(Document $document, Exporter $exporter, string $extension): string {
 		if (!in_array($extension, self::PAGINATED, true)) {

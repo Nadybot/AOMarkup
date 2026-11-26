@@ -69,6 +69,43 @@ final class BbmlImporterTest extends TestCase {
 		$this->assertSame($warnings, array_map(static fn ($r): string => (string)$r->message, $logger->records->all()));
 	}
 
+	/** @return iterable<string,array{string,string}> */
+	public static function provideTables(): iterable {
+		yield 'two rows' => ["a | b\nc | d", "<table border=\"true\">\n\t<tr><td>a</td><td>b</td></tr>\n\t<tr><td>c</td><td>d</td></tr>\n</table>\n"];
+		yield 'header line and underline, numbers right-aligned' => [
+			"Name     Value\n-----\nx | 1\ny | 22",
+			"<table border=\"true\">\n\t<tr><th>Name</th><th align=\"right\">Value</th></tr>\n\t<tr><td>x</td><td>1</td></tr>\n\t<tr><td>y</td><td>22</td></tr>\n</table>\n",
+		];
+		yield 'underlined first row' => [
+			"<u>A | B</u>\nx | y",
+			"<table border=\"true\">\n\t<tr><th>A</th><th>B</th></tr>\n\t<tr><td>x</td><td>y</td></tr>\n</table>\n",
+		];
+		yield 'coloured separators, indented, without header' => [
+			"<tab>a <highlight>|<end> 10\n<tab>b <highlight>|<end> 200\ntext",
+			"<indent>\n\t<table border=\"true\">\n\t\t<tr><td>a</td><td align=\"right\">10</td></tr>\n\t\t<tr><td>b</td><td align=\"right\">200</td></tr>\n\t</table>\n</indent>\n\ntext\n",
+		];
+		yield 'separators at the edges' => ["| a | b |\n| c | d |", "<table border=\"true\">\n\t<tr><td>a</td><td>b</td></tr>\n\t<tr><td>c</td><td>d</td></tr>\n</table>\n"];
+		yield 'shorter rows span the rest' => [
+			"a | b | c\nd | e | f\ng | h",
+			"<table border=\"true\">\n\t<tr><td>a</td><td>b</td><td>c</td></tr>\n\t<tr><td>d</td><td>e</td><td>f</td></tr>\n\t<tr><td>g</td><td colspan=\"2\">h</td></tr>\n</table>\n",
+		];
+		yield 'one line is no table' => ["only one | line", "only one | line\n"];
+		yield 'only one row with the most columns' => ["a | b | c\nd | e", "a | b | c\nd | e\n"];
+		yield 'bars are no separators' => ["bar ||||| x\nbar || y", "bar ||||| x\nbar || y\n"];
+		yield 'rows must be consecutive' => ["a | b\nplain line\nc | d", "a | b\nplain line\nc | d\n"];
+	}
+
+	#[DataProvider('provideTables')]
+	public function testTables(string $bbml, string $aoxml): void {
+		$logger = TestLogger::create();
+		$this->assertSame($aoxml, self::serialize((new BbmlImporter($logger, detectTables: true))->import($bbml)));
+		$this->assertSame([], $logger->records->all());
+	}
+
+	public function testTablesAreOnlyDetectedWhenAskedFor(): void {
+		$this->assertSame("a | b\nc | d\n", self::serialize((new BbmlImporter())->import("a | b\nc | d")));
+	}
+
 	public function testPlainAomlWithTheBotsName(): void {
 		$aoml = '<a href="text://<font color=#89D2E8><font color=#FFFF00>Help</font>' . "\n\n"
 			. "<a href='chatcmd:///tell Nadybot !aggdef 1.2'>/tell Nadybot !aggdef 1.2</a> <a href='chatcmd:///tell Nadybot !help'>!help</a>"

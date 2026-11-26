@@ -7,7 +7,7 @@ use function Safe\{preg_match, preg_replace};
 use AO\Markup\Context\PlaceholderProvider;
 use AO\Markup\{Document, Window};
 use AO\Markup\Export\TextContent;
-use AO\Markup\Import\Bbml\{BbmlToken, BbmlTokenizer, InlineStack};
+use AO\Markup\Import\Bbml\{BbmlLine, BbmlToken, BbmlTokenizer, InlineStack, TableDetector};
 use AO\Markup\Node\{
 	Center,
 	CharLink,
@@ -77,14 +77,17 @@ final class BbmlImporter implements Importer {
 	private array $windows = [];
 
 	/**
-	 * @param ?string $botName Name of the bot, to recognise its commands in plain AOML
-	 *                         ("/tell Nadybot !help"); BBML uses <myname>
-	 * @param ?string $symbol  Command prefix of the bot, for the same purpose; BBML uses <symbol>
+	 * @param ?string $botName      Name of the bot, to recognise its commands in plain AOML
+	 *                              ("/tell Nadybot !help"); BBML uses <myname>
+	 * @param ?string $symbol       Command prefix of the bot, for the same purpose; BBML uses <symbol>
+	 * @param bool    $detectTables Turn lines with "|" between columns into tables. This guesses, so
+	 *                              it is off by default; see docs/AoXML.md §6.1
 	 */
 	public function __construct(
 		private LoggerInterface $logger=new NullLogger(),
 		private ?string $botName=null,
 		private ?string $symbol=null,
+		private bool $detectTables=false,
 	) {
 	}
 
@@ -170,7 +173,7 @@ final class BbmlImporter implements Importer {
 	 * @return list<Node>
 	 */
 	private function blocks(array $tokens, bool $inWindow): array {
-		/** @var list<array{list<array{int,string,Node}>,string}> $frames Items of the open block tags (permheader, center) */
+		/** @var list<array{list<BbmlLine>,string}> $frames Lines of the open block tags (permheader, center) */
 		$frames = [[[], '']];
 		$line = [];
 		$open = [];
@@ -179,15 +182,15 @@ final class BbmlImporter implements Importer {
 				$this->finishLine($line, $open, $frames, $inWindow, always: true);
 			} elseif ($token->isTag('pagebreak')) {
 				$this->finishLine($line, $open, $frames, $inWindow);
-				self::addItem($frames, [0, 'block', new PageBreak()]);
+				self::addItem($frames, new BbmlLine(0, BbmlLine::BLOCK, new PageBreak()));
 			} elseif ($token->isTag('permheader', 'center')) {
 				$this->finishLine($line, $open, $frames, $inWindow);
 				$frames []= [[], $token->name];
 			} elseif ($token->isClosingTag('permheader', 'center') && count($frames) > 1 && $frames[count($frames) - 1][1] === $token->name) {
 				$this->finishLine($line, $open, $frames, $inWindow);
 				[$items, $name] = array_pop($frames) ?? [[], ''];
-				$children = $this->fold($items);
-				self::addItem($frames, [0, 'block', $name === 'center' ? new Center(...$children) : new Repeat(...$children)]);
+				$children = $this->fold($items, 0, $inWindow);
+				self::addItem($frames, new BbmlLine(0, BbmlLine::BLOCK, $name === 'center' ? new Center(...$children) : new Repeat(...$children), inner: $items));
 			} else {
 				$line []= $token;
 			}
@@ -199,16 +202,16 @@ final class BbmlImporter implements Importer {
 		foreach ($frames as $frame) {
 			array_push($items, ...$frame[0]);
 		}
-		return $this->fold($items);
+		return $this->fold($items, 0, $inWindow);
 	}
 
 	/**
 	 * Add the current line to the innermost open block
 	 *
-	 * @param list<BbmlToken>                                  $line
-	 * @param list<array{string,string|StyleName}>             $open
-	 * @param list<array{list<array{int,string,Node}>,string}> $frames
-	 * @param bool                                             $always Also add an empty line (it separates paragraphs)
+	 * @param list<BbmlToken>                      $line
+	 * @param list<array{string,string|StyleName}> $open
+	 * @param list<array{list<BbmlLine>,string}>   $frames
+	 * @param bool                                 $always Also add an empty line (it separates paragraphs)
 	 */
 	private function finishLine(array &$line, array &$open, array &$frames, bool $inWindow, bool $always=false): void {
 		if (count($line) > 0 || $always) {
@@ -218,12 +221,11 @@ final class BbmlImporter implements Importer {
 	}
 
 	/**
-	 * @param list<array{list<array{int,string,Node}>,string}> $frames
-	 * @param array{int,string,Node}                           $item
+	 * @param list<array{list<BbmlLine>,string}> $frames
 	 *
-	 * @param-out list<array{list<array{int,string,Node}>,string}> $frames
+	 * @param-out list<array{list<BbmlLine>,string}> $frames
 	 */
-	private static function addItem(array &$frames, array $item): void {
+	private static function addItem(array &$frames, BbmlLine $item): void {
 		[$items, $name] = array_pop($frames) ?? [[], ''];
 		$items []= $item;
 		$frames []= [$items, $name];
@@ -234,10 +236,8 @@ final class BbmlImporter implements Importer {
 	 *
 	 * @param list<BbmlToken>                      $tokens
 	 * @param list<array{string,string|StyleName}> $open   Inline tags still open from the previous line
-	 *
-	 * @return array{int,string,Node}
 	 */
-	private function line(array $tokens, array &$open, bool $inWindow): array {
+	private function line(array $tokens, array &$open, bool $inWindow): BbmlLine {
 		// Leading <tab>s are the indentation, and so are 4 spaces each (what Nadybot makes of a <tab>)
 		$level = 0;
 		$spaces = 0;
@@ -266,51 +266,58 @@ final class BbmlImporter implements Importer {
 			$inner = array_slice($tokens, 1, -1);
 			if (count(array_filter($inner, static fn (BbmlToken $t): bool => $t->isTag('end', 'font') || $t->isClosingTag('font'))) === 0) {
 				$children = $this->inline($inner, $open, $inWindow);
-				return [$level, 'heading', new Heading($tokens[0]->name === 'header' ? 1 : 2, ...$children)];
+				return new BbmlLine($level, BbmlLine::HEADING, new Heading($tokens[0]->name === 'header' ? 1 : 2, ...$children), $tokens);
 			}
 		}
 
 		$nodes = $this->inline($tokens, $open, $inWindow);
 		if (count($nodes) === 0) {
-			return [$level, 'blank', new Fragment()];
+			return new BbmlLine($level, BbmlLine::BLANK, new Fragment());
 		}
-		return [$level, 'line', new Fragment(...$nodes)];
+		return new BbmlLine($level, BbmlLine::LINE, new Fragment(...$nodes), $tokens);
 	}
 
 	/**
 	 * Build blocks from lines: consecutive lines on the same level form a paragraph,
 	 * lines on a deeper level go into an <indent>
 	 *
-	 * @param list<array{int,string,Node}> $items
+	 * @param list<BbmlLine> $items
 	 *
 	 * @return list<Node>
 	 */
-	private function fold(array $items, int $level=0): array {
+	private function fold(array $items, int $level=0, bool $inWindow=true): array {
+		if ($this->detectTables) {
+			$items = (new TableDetector(function (array $tokens) use ($inWindow): array {
+				$open = [];
+				return $this->inline($tokens, $open, $inWindow);
+			}))->detect($items, $level);
+		}
 		$blocks = [];
 		$paragraph = [];
 		$count = count($items);
 		for ($i = 0; $i < $count; $i++) {
-			[$itemLevel, $kind, $node] = $items[$i];
-			if ($kind === 'blank') {
+			$item = $items[$i];
+			[$itemLevel, $kind, $node] = [$item->level, $item->kind, $item->node];
+			if ($kind === BbmlLine::BLANK) {
 				self::flushParagraph($paragraph, $blocks);
 				continue;
 			}
-			if ($itemLevel > $level && $kind !== 'block') {
+			if ($itemLevel > $level && $kind !== BbmlLine::BLOCK) {
 				self::flushParagraph($paragraph, $blocks);
 				$deeper = [];
-				while ($i < $count && $items[$i][1] !== 'block' && ($items[$i][0] > $level || $items[$i][1] === 'blank')) {
+				while ($i < $count && $items[$i]->kind !== BbmlLine::BLOCK && ($items[$i]->level > $level || $items[$i]->kind === BbmlLine::BLANK)) {
 					$deeper []= $items[$i++];
 				}
 				// Empty lines after the indented lines belong to this level again
-				while (count($deeper) > 0 && $deeper[count($deeper) - 1][1] === 'blank') {
+				while (count($deeper) > 0 && $deeper[count($deeper) - 1]->kind === BbmlLine::BLANK) {
 					array_pop($deeper);
 					$i--;
 				}
 				$i--;
-				$blocks []= new Indent(...$this->fold($deeper, $level + 1));
+				$blocks []= new Indent(...$this->fold($deeper, $level + 1, $inWindow));
 				continue;
 			}
-			if ($kind === 'line') {
+			if ($kind === BbmlLine::LINE) {
 				$paragraph []= $node;
 				continue;
 			}

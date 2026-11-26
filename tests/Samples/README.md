@@ -19,6 +19,7 @@ Every directory is one real Nadybot command output:
 | `legacy.bbml` | What Nadybot's code produces today (BBML, before colours are resolved, with the window colour `Text::makeBlob()` adds) |
 | `input.aoxml` | The same output written in AoXML, in canonical form (`AoXmlSerializer` must reproduce it exactly) |
 | `expected-import.aoxml` | `BbmlImporter` on `legacy.bbml`: the literal, clean translation (it guesses nothing, so it is not `input.aoxml`) |
+| `expected-tables.aoxml` | `BbmlImporter` with `detectTables` on `legacy.bbml`, only for samples with tables (`docs/AoXML.md` §6.1); for all others the result must be `expected-import.aoxml` |
 | `expected.aoml` | `AomlExporter` (official client) |
 | `expected.bbml` | `BbmlExporter` (relays) |
 | `expected.lepanel` | `LePanelExporter` (Lost Eden). **Speculative**: uses tags we asked the Lost Eden devs for (`<table>`, `<ul>`, `<stat value unit>`, `<bar left right marker>`) |

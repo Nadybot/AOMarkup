@@ -225,6 +225,27 @@ It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like
   give them to the importer (`botName`, `symbol`) to get `<cmd>` instead of `<client>`.
   Spaces at the edges of styles and link texts move outside. Unknown tags and link targets
   are logged and dropped, their text is kept. Popups inside popups keep only their link text.
+
+### 6.1 Table detection
+Alignment with spaces only works in fonts we know; Lost Eden lets every window have its own
+font size. `new BbmlImporter(detectTables: true)` therefore turns tables in BBML into real
+`<table>`s. This **guesses**, so it is off by default, and only one, unambiguous pattern is
+recognised so far (the samples `02-history` and `07-history-pages`, `expected-tables.aoxml`):
+
+- Columns are separated by `|`: a single `|`, plain or in a colour of its own
+  (`<highlight>|<end>`); `||` is not a separator (bars, `||` as text).
+- A table is a run of at least two consecutive lines on the same indentation level with
+  separators, at least two of them with the most columns, and at least two columns.
+  Separators at the start or end of a line are ignored (`| a | b |`).
+- A line with fewer columns spans the rest with its last cell (`colspan`).
+- The header row is a line whose columns are separated by two or more spaces, followed by a line
+  of `_`, `-`, `=` or `─` (in a `<permheader>`, or as two lines) right before the rows; the
+  `<permheader>` is dropped, a table repeats its header on every page anyway. A first row that is
+  underlined as a whole (`<u>…</u>`, as `AomlExporter` writes it) is a header row, too.
+- Columns whose cells are all numbers are right-aligned. Tables get `border="true"`.
+
+Columns aligned with spaces only (`Text::alignNumber()`, black zeros) are not recognised yet;
+that needs real messages to tune and measure against.
 - **Export:** `BbmlExporter` writes BBML for relays: named styles stay named, so the receiving
   bot applies its own theme, while placeholders are resolved, since the receiver would fill in
   its own name. `AomlExporter` writes Funcom AOML with all colours resolved.
