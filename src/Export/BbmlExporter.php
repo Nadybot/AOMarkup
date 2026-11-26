@@ -11,8 +11,8 @@ use AO\Markup\Metric\{AoFontMetric, TextMetric};
  * BBML, the Budabot markup language: AOML that keeps the named styles
  *
  * Like AomlExporter, but <highlight>, <header2>, <green>, … stay named and are closed
- * with <end>, so the receiving bot applies its own theme. Placeholders are resolved,
- * since the receiver would fill in its own name. Meant for relays to bots that do
+ * with <end>, so the receiving bot applies its own theme. The window colour and the
+ * placeholders are resolved, like Nadybot's NadyNative relay does. Meant for relays to bots that do
  * not understand AoXML.
  */
 final class BbmlExporter extends BaseExporter {

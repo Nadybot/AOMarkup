@@ -76,7 +76,8 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Theme colours become their BBML names, closed with `<end>`: `<header>`, `<header2>`,
   `<highlight>`, `<green>`, `<neutral>`, … `<syntax>` becomes `<highlight>`, explicit `<color>`
   stays `<font color=…>…</font>`.
-- No window colour: the receiving bot adds its own.
+- The popup starts with the sender's window colour as `<font color=…>`, like `Text::makeBlob()`
+  in Nadybot does.
 - Placeholders are resolved (`/tell Nadybot !help`), since the receiver would fill in its own name.
 
 ### ANSI / plain text
