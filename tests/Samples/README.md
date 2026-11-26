@@ -150,6 +150,15 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   colours are dropped.
 - Tables and the slider become code blocks (same layout as plain text).
 - `<syntax>` and `<cmd>` become inline code, items become `[name](url)`, `<indent>` becomes `> `.
+- The message is the `content` (empty if it is only a link to a window); every window is an
+  embed. An intro before the sections of a field embed becomes its description.
+- Blocks are separated by an empty line, except after a code block (Discord sets it apart
+  anyway) and before an `<indent>` that continues a paragraph.
+- Fields: `Key: **value** unit`; further values of a key on their own lines.
+- Text is escaped (`\`, `*`, `~`, `` ` ``, `|`, and `_` at word boundaries; `online_show_relay`
+  stays as it is). Items and nanos are `[text](url)`, `<url>` is `[text](url)` or the bare URL;
+  skills, characters, waypoints and popup links are plain text, `<client>` is inline code.
+- `<hr/>` is a line of 20 `─`; images are dropped.
 - `<choice>`: the options are listed in the description (label in bold, `(current)` for the
   selected one), and a select menu is added as a message component: `custom_id` is
   `aom-choice:` + command, the selected option is the `default`.
