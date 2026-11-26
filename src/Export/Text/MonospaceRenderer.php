@@ -204,7 +204,9 @@ final class MonospaceRenderer {
 		$valueWidth = 0;
 		foreach ($list->fields as $i => $field) {
 			$labels[$i] = $this->inline($field->name) . ':';
-			$labelWidth = max($labelWidth, $this->width($labels[$i]));
+		}
+		foreach ($list->layout()->fields as $field) {
+			$labelWidth = max($labelWidth, $this->width($this->inline($field->name) . ':'));
 			foreach ($field->values as $value) {
 				$numeric = $numeric && TextContent::isNumeric(...$value->children);
 				$valueWidth = max($valueWidth, $this->width(TextContent::of(...$value->children)));
@@ -240,25 +242,12 @@ final class MonospaceRenderer {
 		$separator = $table->border ? ' │ ' : '  ';
 		$separatorWidth = $this->width($separator);
 
-		// Render all cells, measure the columns
-		$cells = [];
-		$widths = [];
-		foreach ($table->rows as $r => $row) {
-			$column = 0;
-			foreach ($row->cells as $c => $cell) {
-				$lines = $this->blocks(self::cellContent($cell), compact: true);
-				$width = max([0, ...array_map($this->width(...), $lines)]);
-				$span = max(1, $cell->colspan);
-				$cells[$r][$c] = [$column, $span, $lines, $table->alignmentOf($r, $c)];
-				if ($span === 1) {
-					$widths[$column] = max($widths[$column] ?? 0, $width);
-				}
-				$column += $span;
-			}
-		}
+		// Render all cells, measure the columns on the whole table
+		[$cells] = $this->cells($table);
+		[$measured, $widths] = $table->layout() === $table ? [$cells, $this->widths($cells)] : $this->cells($table->layout());
 
 		// Cells spanning several columns widen the last of them if needed
-		foreach ($cells as $row) {
+		foreach ($measured as $row) {
 			foreach ($row as [$column, $span, $lines]) {
 				if ($span === 1) {
 					continue;
@@ -295,6 +284,45 @@ final class MonospaceRenderer {
 			}
 		}
 		return $lines;
+	}
+
+	/**
+	 * Render the cells of a table
+	 *
+	 * @return array{array<int,array<int,array{int,int,list<string>,Align}>>,array<int,int>} Cells by row and
+	 *                                                                                       index, and the widths of the columns
+	 */
+	private function cells(Table $table): array {
+		$cells = [];
+		foreach ($table->rows as $r => $row) {
+			$column = 0;
+			foreach ($row->cells as $c => $cell) {
+				$span = max(1, $cell->colspan);
+				$cells[$r][$c] = [$column, $span, $this->blocks(self::cellContent($cell), compact: true), $table->alignmentOf($r, $c)];
+				$column += $span;
+			}
+		}
+		return [$cells, $this->widths($cells)];
+	}
+
+	/**
+	 * Widths of the columns, from the cells without colspan
+	 *
+	 * @param array<int,array<int,array{int,int,list<string>,Align}>> $cells
+	 *
+	 * @return array<int,int>
+	 */
+	private function widths(array $cells): array {
+		$widths = [];
+		foreach ($cells as $row) {
+			foreach ($row as [$column, $span, $lines]) {
+				$widths[$column] ??= 0;
+				if ($span === 1) {
+					$widths[$column] = max([$widths[$column], ...array_map($this->width(...), $lines)]);
+				}
+			}
+		}
+		return $widths;
 	}
 
 	/**

@@ -5,10 +5,12 @@ namespace AO\Markup\Tests;
 use function Safe\{file_get_contents, glob, preg_replace};
 
 use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
+use AO\Markup\Document;
 use AO\Markup\Exceptions\NotImplementedException;
 use AO\Markup\Export\{AnsiExporter, AomlExporter, BbmlExporter, DiscordExporter, Exporter, HtmlExporter, LePanelExporter, PlainExporter};
 use AO\Markup\Parser\AoXmlParser;
 use AO\Markup\Tests\Support\AnsiNotation;
+use AO\Markup\Transform\Paginator;
 use AO\Markup\Widget\WidgetRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +18,15 @@ use PHPUnit\Framework\TestCase;
 /** Golden tests: every sample's input.aoxml must render exactly as its expected.* files */
 final class SamplesTest extends TestCase {
 	private const SAMPLE_DIR = __DIR__ . '/Samples';
+
+	/** Page size of the formats that are paginated, like Nadybot's default max_blob_size */
+	public const PAGE_SIZE = 7_500;
+
+	/** Formats that are split into pages */
+	public const PAGINATED = ['aoml', 'bbml'];
+
+	/** Line between two pages (messages) in an expected file */
+	public const PAGE_SEPARATOR = "\n----- next message -----\n";
 
 	/** @return iterable<string,array{string,string}> */
 	public static function provideSamples(): iterable {
@@ -60,7 +71,7 @@ final class SamplesTest extends TestCase {
 		$exporter = self::exporters()[$extension];
 		try {
 			$document = (new AoXmlParser(WidgetRegistry::withBuiltins()))->parse($input);
-			$actual = $exporter->export($document, self::context());
+			$actual = self::render($document, $exporter, $extension);
 		} catch (NotImplementedException $e) {
 			$this->markTestIncomplete($e->getMessage());
 		}
@@ -69,6 +80,15 @@ final class SamplesTest extends TestCase {
 			return;
 		}
 		$this->assertSame(rtrim($expected, "\n"), rtrim($actual, "\n"));
+	}
+
+	/** Render a document; paginated formats give all pages, separated by PAGE_SEPARATOR */
+	public static function render(Document $document, Exporter $exporter, string $extension): string {
+		if (!in_array($extension, self::PAGINATED, true)) {
+			return $exporter->export($document, self::context());
+		}
+		$pages = (new Paginator())->paginate($document, $exporter, self::context(), self::PAGE_SIZE);
+		return implode(self::PAGE_SEPARATOR, array_map(static fn (Document $page): string => $exporter->export($page, self::context()), $pages));
 	}
 
 	/** The expected files themselves must be well-formed */

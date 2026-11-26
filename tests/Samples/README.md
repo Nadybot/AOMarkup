@@ -10,6 +10,7 @@ Every directory is one real Nadybot command output:
 | `04-items`   | `!items first aid` | list, item links, `<match>`, `<selected>`, `<unavailable/>` |
 | `05-help`    | `!help aggdef` | `<syntax>`/`<param>`, `<cmd>`, `<indent>`, italic |
 | `06-settings` | `!settings change online_show_relay` | `<choice>`/`<option>` widget with native renderers |
+| `07-history-pages` | `!history Orana 1` | pagination of a long table: rows split, header repeated, same column widths on every page, footer on the last page |
 
 ## Files
 
@@ -32,7 +33,9 @@ then make the code follow.
 - Placeholders: `myname` = `Nadybot`, `symbol` = `!`, `myguild` = `Troet`
 - Theme: `AO\Markup\Context\DefaultTheme` (Nadybot's default colours)
 - Links: `TemplateLinkResolver` defaults (`https://auno.org/ao/db.php?id={id}&ql={ql}`)
-- No pagination
+- Pagination: AOML and BBML are split into pages of at most 7 500 bytes (Nadybot's default
+  `max_blob_size`); in the expected files, the pages are separated by a line
+  `----- next message -----`. The other targets are not paginated.
 
 ## ANSI notation
 Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation that

@@ -50,7 +50,7 @@ Pure `Document → Document` steps, combined per exporter:
 |---|---|
 | `PlaceholderResolver` | Replaces `<myname/>`, `<symbol/>`, … with text |
 | `WidgetExpander` | Replaces widgets without a native renderer by their `fallback()` |
-| `Paginator` | Splits a document into several, measured in the target format; ends pages only where needed, and only at `<pagebreak/>`s if there are any (`docs/AoXML.md` §2.2) |
+| `Paginator` | Splits a document into several complete messages, measured by rendering in the target format; ends pages only where needed, and only at `<pagebreak/>`s if there are any (`docs/AoXML.md` §2.2). Parts of a split table or field list (`Table::part()`, `FieldList::part()`) are measured on the whole, so columns line up on every page. |
 
 ## Exporters (`AO\Markup\Export`)
 `Exporter::export(Document, RenderContext): string`.

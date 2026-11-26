@@ -7,11 +7,34 @@ final class Table implements BlockNode {
 	/** @var list<TableRow> */
 	public readonly array $rows;
 
+	/** The whole table, if this is a part of it on one page */
+	private ?Table $whole = null;
+
+	/** @var ?list<list<Align>> Cache of alignments() */
+	private ?array $alignments = null;
+
 	public function __construct(
 		public readonly bool $border=false,
 		TableRow ...$rows,
 	) {
 		$this->rows = array_values($rows);
+	}
+
+	/**
+	 * A part of this table with some of its rows, e.g. for one page
+	 *
+	 * The part is laid out like the whole table, so the columns have the same
+	 * widths on every page.
+	 */
+	public function part(TableRow ...$rows): self {
+		$part = new self($this->border, ...$rows);
+		$part->whole = $this->layout();
+		return $part;
+	}
+
+	/** The table to measure the columns on: the whole table this is a part of, or itself */
+	public function layout(): self {
+		return $this->whole ?? $this;
 	}
 
 	/**
@@ -22,28 +45,34 @@ final class Table implements BlockNode {
 	 * Everything else is left-aligned.
 	 */
 	public function alignmentOf(int $rowIndex, int $cellIndex): Align {
-		$cell = $this->rows[$rowIndex]->cells[$cellIndex] ?? null;
-		if ($cell === null) {
-			return Align::Left;
+		return $this->alignments()[$rowIndex][$cellIndex] ?? Align::Left;
+	}
+
+	/**
+	 * The effective alignment of every cell, by row and cell index (see alignmentOf())
+	 *
+	 * @return list<list<Align>>
+	 */
+	public function alignments(): array {
+		if (isset($this->alignments)) {
+			return $this->alignments;
 		}
-		if ($cell->align !== null) {
-			return $cell->align;
-		}
-		if ($cell->colspan > 1) {
-			return Align::Left;
-		}
-		$column = $this->columnOf($rowIndex, $cellIndex);
-		for ($i = $rowIndex - 1; $i >= 0; $i--) {
-			foreach ($this->rows[$i]->cells as $j => $above) {
-				if (!$above->header || $above->colspan > 1 || $above->align === null) {
-					continue;
+		$defaults = [];
+		$result = [];
+		foreach ($this->rows as $row) {
+			$aligns = [];
+			$column = 0;
+			foreach ($row->cells as $cell) {
+				$span = max(1, $cell->colspan);
+				$aligns []= $cell->align ?? ($span > 1 ? Align::Left : ($defaults[$column] ?? Align::Left));
+				if ($cell->header && $span === 1 && $cell->align !== null) {
+					$defaults[$column] = $cell->align;
 				}
-				if ($this->columnOf($i, $j) === $column) {
-					return $above->align;
-				}
+				$column += $span;
 			}
+			$result []= $aligns;
 		}
-		return Align::Left;
+		return $this->alignments = $result;
 	}
 
 	/** The 0-based column a cell starts in, taking colspans of the cells before it into account */

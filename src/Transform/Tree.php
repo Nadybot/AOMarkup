@@ -46,11 +46,19 @@ final class Tree {
 	 * @param Closure(Node):Node $map
 	 */
 	public static function mapDocument(Document $document, Closure $map): Document {
+		$changed = false;
 		$windows = [];
 		foreach ($document->windows as $id => $window) {
-			$windows[$id] = new Window($window->id, $window->title, ...self::map($map, $window->children));
+			$children = self::map($map, $window->children);
+			$windows[$id] = $children === $window->children ? $window : new Window($window->id, $window->title, ...$children);
+			$changed = $changed || $windows[$id] !== $window;
 		}
-		return new Document(new Fragment(...self::map($map, $document->body->children)), $windows);
+		$children = self::map($map, $document->body->children);
+		if (!$changed && $children === $document->body->children) {
+			return $document;
+		}
+		$body = $children === $document->body->children ? $document->body : new Fragment(...$children);
+		return new Document($body, $windows);
 	}
 
 	/**
@@ -58,51 +66,55 @@ final class Tree {
 	 *
 	 * Structural nodes (fields, field values, table rows and cells, list items)
 	 * are not passed to $map, but descended into, so $map sees all content.
+	 * If nothing changes, $node itself is returned, so unchanged subtrees keep
+	 * their identity (renderers cache measurements of whole tables).
 	 *
 	 * @param Closure(Node):Node $map
 	 */
 	public static function mapChildren(Node $node, Closure $map): Node {
-		$c = static fn (Container $node): array => self::map($map, $node->children);
 		return match (true) {
-			$node instanceof Fragment => new Fragment(...$c($node)),
-			$node instanceof Paragraph => new Paragraph(...$c($node)),
-			$node instanceof Center => new Center(...$c($node)),
-			$node instanceof Footer => new Footer(...$c($node)),
-			$node instanceof Indent => new Indent(...$c($node)),
-			$node instanceof Keep => new Keep(...$c($node)),
-			$node instanceof Repeat => new Repeat(...$c($node)),
-			$node instanceof Section => new Section($node->title, ...$c($node)),
-			$node instanceof Heading => new Heading($node->level, ...$c($node)),
-			$node instanceof Window => new Window($node->id, $node->title, ...$c($node)),
-			$node instanceof Style => new Style($node->style, ...$c($node)),
-			$node instanceof Color => new Color($node->hex, ...$c($node)),
-			$node instanceof CharLink => new CharLink($node->name, ...$c($node)),
-			$node instanceof ClientCommandLink => new ClientCommandLink($node->command, ...$c($node)),
-			$node instanceof CommandLink => new CommandLink($node->command, $node->show, $node->via, ...$c($node)),
-			$node instanceof ItemLink => new ItemLink($node->lowId, $node->highId, $node->ql, ...$c($node)),
-			$node instanceof NanoLink => new NanoLink($node->id, ...$c($node)),
-			$node instanceof SkillLink => new SkillLink($node->id, ...$c($node)),
-			$node instanceof PopupLink => new PopupLink($node->window, ...$c($node)),
-			$node instanceof UrlLink => new UrlLink($node->href, ...$c($node)),
-			$node instanceof WaypointLink => new WaypointLink($node->x, $node->y, $node->playfield, ...$c($node)),
-			$node instanceof WidgetNode => new WidgetNode($node->widget, ...$c($node)),
-			$node instanceof FieldList => new FieldList(
-				...array_map(static fn (Field $f): Field => self::field($f, $map), $node->fields)
-			),
+			$node instanceof FieldList => self::fieldList($node, $map),
 			$node instanceof Field => self::field($node, $map),
-			$node instanceof FieldValue => self::value($node, $map),
-			$node instanceof ListBlock => new ListBlock(
-				$node->ordered,
-				$node->start,
-				...array_map(static fn (ListItem $i): ListItem => new ListItem($i->icon, ...$c($i)), $node->items)
-			),
-			$node instanceof ListItem => new ListItem($node->icon, ...$c($node)),
-			$node instanceof Table => new Table(
-				$node->border,
-				...array_map(static fn (TableRow $r): TableRow => self::row($r, $map), $node->rows)
-			),
+			$node instanceof ListBlock => self::list($node, $map),
+			$node instanceof Table => self::table($node, $map),
 			$node instanceof TableRow => self::row($node, $map),
-			$node instanceof TableCell => self::cell($node, $map),
+			$node instanceof Container => self::container($node, $map),
+			default => $node,
+		};
+	}
+
+	/** @param Closure(Node):Node $map */
+	private static function container(Container $node, Closure $map): Node {
+		$c = self::map($map, $node->children);
+		if ($c === $node->children) {
+			return $node;
+		}
+		return match (true) {
+			$node instanceof Fragment => new Fragment(...$c),
+			$node instanceof Paragraph => new Paragraph(...$c),
+			$node instanceof Center => new Center(...$c),
+			$node instanceof Footer => new Footer(...$c),
+			$node instanceof Indent => new Indent(...$c),
+			$node instanceof Keep => new Keep(...$c),
+			$node instanceof Repeat => new Repeat(...$c),
+			$node instanceof Section => new Section($node->title, ...$c),
+			$node instanceof Heading => new Heading($node->level, ...$c),
+			$node instanceof Window => new Window($node->id, $node->title, ...$c),
+			$node instanceof Style => new Style($node->style, ...$c),
+			$node instanceof Color => new Color($node->hex, ...$c),
+			$node instanceof CharLink => new CharLink($node->name, ...$c),
+			$node instanceof ClientCommandLink => new ClientCommandLink($node->command, ...$c),
+			$node instanceof CommandLink => new CommandLink($node->command, $node->show, $node->via, ...$c),
+			$node instanceof ItemLink => new ItemLink($node->lowId, $node->highId, $node->ql, ...$c),
+			$node instanceof NanoLink => new NanoLink($node->id, ...$c),
+			$node instanceof SkillLink => new SkillLink($node->id, ...$c),
+			$node instanceof PopupLink => new PopupLink($node->window, ...$c),
+			$node instanceof UrlLink => new UrlLink($node->href, ...$c),
+			$node instanceof WaypointLink => new WaypointLink($node->x, $node->y, $node->playfield, ...$c),
+			$node instanceof WidgetNode => new WidgetNode($node->widget, ...$c),
+			$node instanceof FieldValue => new FieldValue($node->unit, ...$c),
+			$node instanceof ListItem => new ListItem($node->icon, ...$c),
+			$node instanceof TableCell => new TableCell($node->header, $node->align, $node->colspan, ...$c),
 			default => $node,
 		};
 	}
@@ -117,26 +129,90 @@ final class Tree {
 		return array_map($map, $nodes);
 	}
 
+	/**
+	 * Map the elements of a typed list of structural nodes
+	 *
+	 * @template E of Node
+	 *
+	 * @param list<E>      $nodes
+	 * @param Closure(E):E $map
+	 *
+	 * @return ?list<E> The new list, or null if nothing changed
+	 */
+	private static function changed(array $nodes, Closure $map): ?array {
+		$mapped = array_map($map, $nodes);
+		return $mapped === $nodes ? null : $mapped;
+	}
+
+	/** @param Closure(Node):Node $map */
+	private static function list(ListBlock $list, Closure $map): ListBlock {
+		$items = self::changed($list->items, static fn (ListItem $i): ListItem => self::item($i, $map));
+		return $items === null ? $list : new ListBlock($list->ordered, $list->start, ...$items);
+	}
+
+	/** @param Closure(Node):Node $map */
+	private static function item(ListItem $item, Closure $map): ListItem {
+		$c = self::map($map, $item->children);
+		return $c === $item->children ? $item : new ListItem($item->icon, ...$c);
+	}
+
+	/**
+	 * Parts of a table keep being parts of the (mapped) whole table
+	 *
+	 * @param Closure(Node):Node $map
+	 */
+	private static function table(Table $table, Closure $map): Table {
+		$rows = self::changed($table->rows, static fn (TableRow $r): TableRow => self::row($r, $map));
+		$whole = $table->layout();
+		if ($whole === $table) {
+			return $rows === null ? $table : new Table($table->border, ...$rows);
+		}
+		$mappedWhole = self::table($whole, $map);
+		if ($rows === null && $mappedWhole === $whole) {
+			return $table;
+		}
+		return $mappedWhole->part(...$rows ?? $table->rows);
+	}
+
+	/** @param Closure(Node):Node $map */
+	private static function fieldList(FieldList $list, Closure $map): FieldList {
+		$fields = self::changed($list->fields, static fn (Field $f): Field => self::field($f, $map));
+		$whole = $list->layout();
+		if ($whole === $list) {
+			return $fields === null ? $list : new FieldList(...$fields);
+		}
+		$mappedWhole = self::fieldList($whole, $map);
+		if ($fields === null && $mappedWhole === $whole) {
+			return $list;
+		}
+		return $mappedWhole->part(...$fields ?? $list->fields);
+	}
+
 	/** @param Closure(Node):Node $map */
 	private static function field(Field $field, Closure $map): Field {
-		return new Field(
-			self::map($map, $field->name),
-			...array_map(static fn (FieldValue $v): FieldValue => self::value($v, $map), $field->values)
-		);
+		$name = self::map($map, $field->name);
+		$values = self::changed($field->values, static fn (FieldValue $v): FieldValue => self::value($v, $map));
+		if ($name === $field->name && $values === null) {
+			return $field;
+		}
+		return new Field($name, ...$values ?? $field->values);
 	}
 
 	/** @param Closure(Node):Node $map */
 	private static function value(FieldValue $value, Closure $map): FieldValue {
-		return new FieldValue($value->unit, ...self::map($map, $value->children));
+		$c = self::map($map, $value->children);
+		return $c === $value->children ? $value : new FieldValue($value->unit, ...$c);
 	}
 
 	/** @param Closure(Node):Node $map */
 	private static function row(TableRow $row, Closure $map): TableRow {
-		return new TableRow(...array_map(static fn (TableCell $c): TableCell => self::cell($c, $map), $row->cells));
+		$cells = self::changed($row->cells, static fn (TableCell $c): TableCell => self::cell($c, $map));
+		return $cells === null ? $row : new TableRow(...$cells);
 	}
 
 	/** @param Closure(Node):Node $map */
 	private static function cell(TableCell $cell, Closure $map): TableCell {
-		return new TableCell($cell->header, $cell->align, $cell->colspan, ...self::map($map, $cell->children));
+		$c = self::map($map, $cell->children);
+		return $c === $cell->children ? $cell : new TableCell($cell->header, $cell->align, $cell->colspan, ...$c);
 	}
 }

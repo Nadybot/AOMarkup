@@ -44,6 +44,7 @@ use AO\Markup\Node\{
 	UrlLink,
 	WaypointLink,
 };
+use WeakMap;
 
 /**
  * Renders a document for the game client, as AOML or BBML
@@ -63,11 +64,18 @@ final class GameRenderer {
 	/** The document being rendered, for its windows */
 	private ?Document $document = null;
 
+	/**
+	 * @param WeakMap<Table,array{array<int,int>,array<int,bool>}> $columns Column widths and numeric columns of
+	 *                                                                      whole tables, kept by the exporter: the
+	 *                                                                      Paginator renders parts of the same table
+	 *                                                                      many times
+	 */
 	public function __construct(
 		private RenderContext $context,
 		private TextMetric $metric,
 		private GameStyler $styler,
 		private string $bullet,
+		private WeakMap $columns,
 	) {
 	}
 
@@ -202,7 +210,9 @@ final class GameRenderer {
 		$valueWidth = 0;
 		foreach ($list->fields as $i => $field) {
 			$labels[$i] = $this->inline($field->name) . ':';
-			$labelWidth = max($labelWidth, $this->width($labels[$i]));
+		}
+		foreach ($list->layout()->fields as $field) {
+			$labelWidth = max($labelWidth, $this->width($this->inline($field->name) . ':'));
 			foreach ($field->values as $value) {
 				$numeric = $numeric && TextContent::isNumeric(...$value->children);
 				$valueWidth = max($valueWidth, $this->metric->width(TextContent::of(...$value->children)));
@@ -242,43 +252,15 @@ final class GameRenderer {
 		$separator = $table->border ? ' | ' : '  ';
 		$separatorWidth = $this->metric->width($separator);
 
-		// Render all cells, measure the columns, find the numeric ones
-		$cells = [];
-		$widths = [];
-		$numeric = [];
-		foreach ($table->rows as $r => $row) {
-			$column = 0;
-			foreach ($row->cells as $c => $cell) {
-				$lines = $this->blocks(self::cellContent($cell), compact: true);
-				$span = max(1, $cell->colspan);
-				$cells[$r][$c] = [$column, $span, $lines, $table->alignmentOf($r, $c)];
-				if ($span === 1) {
-					$widths[$column] = max([$widths[$column] ?? 0, ...array_map($this->width(...), $lines)]);
-					if (!$cell->header) {
-						$numeric[$column] = ($numeric[$column] ?? true) && TextContent::isNumeric(...$cell->children);
-					}
-				}
-				$column += $span;
-			}
+		// Render all cells; measure the columns and find the numeric ones on the whole table
+		[$cells, $widths, $numeric] = $this->cells($table);
+		if ($table->layout() === $table) {
+			[$widths, $numeric] = $this->columns($cells, $widths, $numeric, $separatorWidth);
+		} else {
+			$whole = $table->layout();
+			$this->columns[$whole] ??= $this->columns(...[...$this->cells($whole), $separatorWidth]);
+			[$widths, $numeric] = $this->columns[$whole];
 		}
-
-		// Cells spanning several columns widen the last of them if needed
-		foreach ($cells as $row) {
-			foreach ($row as [$column, $span, $lines]) {
-				if ($span === 1) {
-					continue;
-				}
-				$available = $separatorWidth * ($span - 1);
-				for ($i = $column; $i < $column + $span; $i++) {
-					$available += $widths[$i] ??= 0;
-				}
-				$needed = max([0, ...array_map($this->width(...), $lines)]);
-				if ($needed > $available) {
-					$widths[$column + $span - 1] += $needed - $available;
-				}
-			}
-		}
-		ksort($widths);
 
 		// Where each column starts, in pixels
 		$starts = [];
@@ -325,6 +307,63 @@ final class GameRenderer {
 			}
 		}
 		return $lines;
+	}
+
+	/**
+	 * The final widths of the columns, widened for cells spanning several columns
+	 *
+	 * @param array<int,array<int,array{int,int,list<string>,Align}>> $cells
+	 * @param array<int,int>                                          $widths
+	 * @param array<int,bool>                                         $numeric
+	 *
+	 * @return array{array<int,int>,array<int,bool>}
+	 */
+	private function columns(array $cells, array $widths, array $numeric, int $separatorWidth): array {
+		foreach ($cells as $row) {
+			foreach ($row as [$column, $span, $lines]) {
+				if ($span === 1) {
+					continue;
+				}
+				$available = $separatorWidth * ($span - 1);
+				for ($i = $column; $i < $column + $span; $i++) {
+					$available += $widths[$i] ??= 0;
+				}
+				$needed = max([0, ...array_map($this->width(...), $lines)]);
+				if ($needed > $available) {
+					$widths[$column + $span - 1] += $needed - $available;
+				}
+			}
+		}
+		ksort($widths);
+		return [$widths, $numeric];
+	}
+
+	/**
+	 * Render the cells of a table, measure its columns and find the numeric ones
+	 *
+	 * @return array{array<int,array<int,array{int,int,list<string>,Align}>>,array<int,int>,array<int,bool>}
+	 */
+	private function cells(Table $table): array {
+		$cells = [];
+		$widths = [];
+		$numeric = [];
+		foreach ($table->rows as $r => $row) {
+			$column = 0;
+			foreach ($row->cells as $c => $cell) {
+				$lines = $this->blocks(self::cellContent($cell), compact: true);
+				$span = max(1, $cell->colspan);
+				$cells[$r][$c] = [$column, $span, $lines, $table->alignmentOf($r, $c)];
+				$widths[$column] ??= 0;
+				if ($span === 1) {
+					$widths[$column] = max([$widths[$column], ...array_map($this->width(...), $lines)]);
+					if (!$cell->header) {
+						$numeric[$column] = ($numeric[$column] ?? true) && TextContent::isNumeric(...$cell->children);
+					}
+				}
+				$column += $span;
+			}
+		}
+		return [$cells, $widths, $numeric];
 	}
 
 	/**

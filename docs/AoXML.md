@@ -95,10 +95,17 @@ can only give hints; it never decides where a page ends.
   fits on one page is not split at all.
 - If a window contains at least one `<pagebreak/>`, pages end **only** there. Only if the content
   between two of them does not fit on a page on its own, that part is split by the rules below.
-- Without `<pagebreak/>`, pages end between blocks, preferably before a `<section>`, and between
-  table rows.
-- `<keep>` is never split, unless it does not fit on a page on its own. A `<footer>` is only on the last page. `<repeat>` and header rows
-  of tables are repeated at the top of every page.
+- Without `<pagebreak/>`, pages end between blocks. A `<section>` that does not fit on the
+  current page starts a new one; it is only split if it does not fit on a page on its own, and
+  then continues on the next page without its title (indented as before).
+- Tables are split between rows, lists between items, field lists between fields, paragraphs
+  between lines. A split table or field list keeps the column widths of the whole, so it looks
+  the same on every page.
+- `<keep>` is never split, unless it does not fit on a page on its own. A `<footer>` is only on
+  the last page. `<repeat>` and the header rows at the top of a table are repeated at the top of
+  every page.
+- Every page is a complete message. The link to the window and its title get the page number,
+  `History of Orana (Page 1 / 3)` by default (the format is a parameter of the `Paginator`).
 - Targets without pagination ignore `<pagebreak/>`; it renders nothing.
 
 ## 3. Inline elements
