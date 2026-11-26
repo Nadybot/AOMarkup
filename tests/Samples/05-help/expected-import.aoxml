@@ -1,0 +1,27 @@
+<popup window="window1">Help (aggdef)</popup>
+
+<window id="window1" title="Help (aggdef)">
+	<h2>'aggdef' command</h2>
+
+	Find out where to set your aggdef slider to be 1/1
+
+	<indent>
+		<strong><symbol/>aggdef &lt;attack time&gt; &lt;recharge time&gt; &lt;init value&gt;</strong>
+	</indent>
+
+	If you are lazy, just use
+
+	<indent>
+		<strong><symbol/>weapon &lt;drop weapon into chat&gt;</strong>
+	</indent>
+
+	Example:
+
+	<indent>
+		Your weapon has an attack time of <strong>1.2</strong> seconds and a recharge time of <strong>1.5</strong> seconds.
+		Your melee/ranged init is <strong>1200</strong>:
+		<cmd show="tell">aggdef 1.2 1.5 1200</cmd>
+	</indent>
+
+	<i>See <cmd>help syntax</cmd> for an explanation of the command syntax</i>
+</window>

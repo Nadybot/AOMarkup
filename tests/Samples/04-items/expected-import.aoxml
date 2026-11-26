@@ -1,0 +1,11 @@
+<popup window="window1">Item Search Results (3)</popup>
+
+<window id="window1" title="Item Search Results (3)">
+	<item id="247115" ql="1">Basic First Aid Kit</item> (QL 1)
+	First Aid Kit - QL <red>[</red><item id="246800/246801" ql="1">1</item>, <item id="246800/246801" ql="100">100</item><red>]</red>, <item id="246802/246803" ql="200">200</item>
+	Prototype First Aid Kit <red>(!)</red> - QL <yellow>[</yellow><item id="299000" ql="50">50</item><yellow>]</yellow>
+
+	<strong>*Results have been limited to the first 3 results.</strong>
+
+	Item DB rips created using the AODB tool
+</window>

@@ -1,0 +1,21 @@
+<popup window="window1">Banlist (2)</popup>
+
+<window id="window1" title="Banlist (2)">
+	<h2>Evilguy</h2>
+
+	<indent>
+		Date: <strong>2026-11-20 14:02</strong>
+		By: <strong>Nadyita</strong>
+		Ban ends: <strong>6 days, 3 hrs.</strong>
+		Reason: <strong>Ninja-looting in "APF"</strong>
+	</indent>
+
+	<pagebreak/>
+
+	<h2>Badguy</h2>
+
+	<indent>
+		By: <strong>Nadyita</strong>
+		Ban ends: <strong>Never</strong>
+	</indent>
+</window>

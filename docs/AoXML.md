@@ -197,9 +197,34 @@ It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like
 
 - BBML's `<a href="…">` is the link for everything (`text://`, `chatcmd://`, `itemref://`, …).
   In AoXML, every kind of link has its own element instead.
-- **Import:** `BbmlImporter` reads BBML and therefore plain AOML too, and produces the same
-  document tree. Colours (`<font color=…>`) stay colours; they are never guessed back into
-  semantic styles. See the `legacy.bbml` files in `tests/Samples` for what it has to understand.
+- **Import:** `BbmlImporter` reads BBML and therefore plain AOML too. The translation is literal
+  but clean, and it never guesses: colours stay colours, text aligned with spaces or `|` stays
+  text (no tables), and nothing becomes a `<section>`, `<footer>`, `<dl>` or widget. The
+  `expected-import.aoxml` files in `tests/Samples` show the result for each `legacy.bbml`.
+
+  | BBML / AOML | AoXML |
+  |---|---|
+  | `<a href="text://…">label</a>` | `<popup window="window1">label</popup>` + `<window id="window1">` (ids in order) |
+  | window colour `<font color=…>` at the start of a popup | dropped |
+  | `<header>T<end>` + empty line at the start of a popup, or a first line that is the link text | the window title |
+  | `<permheader>…</permheader>`, `<pagebreak>`, `<center>` | `<repeat>`, `<pagebreak/>`, `<center>` |
+  | a line that is only `<header>…<end>` / `<header2>…<end>` | `<h1>` / `<h2>` |
+  | leading `<tab>`s, or 4 leading spaces each | `<indent>`, nested by level; `<tab>` inside a line is a space |
+  | lines, empty lines | line breaks, paragraphs; runs of spaces collapse |
+  | `<highlight>` | `<strong>` |
+  | `<green>`, `<red>`, `<neutral>`, `<header2>` inside a line, … | the style of the same name |
+  | `<font color=#…>` | `<color value="#…">` |
+  | `<black>…<end>`, `<font color=#000000>` | dropped (invisible padding) |
+  | `<u>`, `<i>`, `<img src=rdb://…>`, `<img src=tdb://id:…>` | `<u>`, `<i>`, `<img>` |
+  | `itemref://`, `itemid://53019/`, `skillid://`, `user://` | `<item>`, `<nano>`, `<skill>`, `<char>` |
+  | `chatcmd:///tell <myname> …`, `/g <myname> …`, `/o <symbol>…` | `<cmd>`, `via="priv"`, `via="org"`; no link text if it is what `<cmd>` shows anyway |
+  | `chatcmd:///start URL`, `chatcmd:///waypoint x y pf`, other `chatcmd://`, `http(s)://` | `<url>`, `<waypoint>`, `<client>`, `<url>` |
+  | `<myname>`, `<myguild>`, `<symbol>` | the placeholders |
+
+  Plain AOML has the bot's name and command prefix instead of `<myname>` and `<symbol>`;
+  give them to the importer (`botName`, `symbol`) to get `<cmd>` instead of `<client>`.
+  Spaces at the edges of styles and link texts move outside. Unknown tags and link targets
+  are logged and dropped, their text is kept. Popups inside popups keep only their link text.
 - **Export:** `BbmlExporter` writes BBML for relays: named styles stay named, so the receiving
   bot applies its own theme, while placeholders are resolved, since the receiver would fill in
   its own name. `AomlExporter` writes Funcom AOML with all colours resolved.

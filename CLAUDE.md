@@ -35,7 +35,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   GrcV2) and `BbmlExporter` (named styles kept, placeholders resolved; relays to bots that
   apply their own theme, e.g. NadyNative to older Nadybots).
 - Relays never carry lepanel markup.
-- Importers never produce widgets.
+- Importers never produce widgets, and never guess structure: `BbmlImporter` translates literally
+  but cleanly (`docs/AoXML.md` §6); each sample's `expected-import.aoxml` is its spec.
 - Closing notes of a window (credits, legends, sources) are `<footer>`, never a guessed
   "last paragraph".
 - `<choice command>` with `<option value selected?>` is a widget (fallback: list with `[select]`
@@ -58,12 +59,6 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - The `expected.*` files in `tests/Samples` are the specification. Change them first,
   then make the code follow.
 - PHP `>=8.1.17` (no readonly classes), no I/O, errors as PSR-3 warnings instead of exceptions.
-
-## To do when building the BbmlImporter
-- `legacy.bbml` must show what Nadybot really sends: add the window colour that
-  `Text::makeBlob()` puts in front (`text://<font color=#89D2E8><header>…`); the importer drops it.
-- The importer never guesses, so `legacy.bbml` does **not** give the tree of `input.aoxml`.
-  Add an `expected-import.aoxml` per sample: the literal but clean translation of `legacy.bbml`.
 
 ## Open questions
 - lepanel output is speculative until the Lost Eden devs settle their tags. Requested from them:

@@ -9,7 +9,10 @@ use AO\Markup\Document;
 use AO\Markup\Exceptions\NotImplementedException;
 use AO\Markup\Export\{AnsiExporter, AomlExporter, BbmlExporter, DiscordExporter, Exporter, HtmlExporter, LePanelExporter, PlainExporter};
 use AO\Markup\Parser\AoXmlParser;
-use AO\Markup\Tests\Support\AnsiNotation;
+use AO\Markup\Export\AoXmlSerializer;
+use AO\Markup\Import\BbmlImporter;
+use AO\Markup\Tests\Support\{AnsiNotation, TreeDump};
+use Beste\Psr\Log\TestLogger;
 use AO\Markup\Transform\Paginator;
 use AO\Markup\Widget\WidgetRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -82,6 +85,30 @@ final class SamplesTest extends TestCase {
 		$this->assertSame(rtrim($expected, "\n"), rtrim($actual, "\n"));
 	}
 
+	/** @return iterable<string,array{string}> */
+	public static function provideSampleDirs(): iterable {
+		foreach (glob(self::SAMPLE_DIR . '/*', GLOB_ONLYDIR) as $dir) {
+			yield basename($dir) => [basename($dir)];
+		}
+	}
+
+	/**
+	 * Importing legacy.bbml gives expected-import.aoxml: a literal, clean translation that guesses nothing
+	 *
+	 * The expected file is canonical AoXML, so it also parses back into the imported tree.
+	 */
+	#[DataProvider('provideSampleDirs')]
+	public function testImport(string $sample): void {
+		$dir = self::SAMPLE_DIR . "/{$sample}";
+		$expected = file_get_contents("{$dir}/expected-import.aoxml");
+		$logger = TestLogger::create();
+		$document = (new BbmlImporter($logger))->import(file_get_contents("{$dir}/legacy.bbml"));
+		$this->assertSame($expected, (new AoXmlSerializer())->export($document, self::context()));
+		$this->assertSame([], array_map(static fn ($r): string => (string)$r->message, $logger->records->all()));
+		$reparsed = (new AoXmlParser(WidgetRegistry::withBuiltins()))->parse($expected);
+		$this->assertSame(TreeDump::document($document), TreeDump::document($reparsed));
+	}
+
 	/** Render a document; paginated formats give all pages, separated by PAGE_SEPARATOR */
 	public static function render(Document $document, Exporter $exporter, string $extension): string {
 		if (!in_array($extension, self::PAGINATED, true)) {
@@ -96,7 +123,7 @@ final class SamplesTest extends TestCase {
 		$samples = glob(self::SAMPLE_DIR . '/*', GLOB_ONLYDIR);
 		$this->assertNotEmpty($samples);
 		foreach ($samples as $dir) {
-			foreach (['legacy.bbml', 'input.aoxml', ...array_map(static fn (string $e): string => "expected.{$e}", array_keys(self::exporters()))] as $file) {
+			foreach (['legacy.bbml', 'input.aoxml', 'expected-import.aoxml', ...array_map(static fn (string $e): string => "expected.{$e}", array_keys(self::exporters()))] as $file) {
 				$this->assertFileExists("{$dir}/{$file}");
 			}
 			$this->assertJson(file_get_contents("{$dir}/expected.discord.json"));

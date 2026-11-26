@@ -1,0 +1,22 @@
+<popup window="window1">Settings Info for online_show_relay</popup>
+
+<window id="window1" title="Settings Info for online_show_relay">
+	<h2>Basic Info</h2>
+
+	<indent>
+		Name: <strong>online_show_relay</strong>
+		Module: <strong>ONLINE_MODULE</strong>
+		Description: <strong>Include players from your relay(s) by default</strong>
+		Current Value: <strong>No</strong>
+	</indent>
+
+	For this setting you must choose one of the options from the list below.
+
+	<h2>Predefined Options</h2>
+
+	<indent>
+		<strong>No</strong> [<cmd command="settings save online_show_relay 0">select</cmd>]
+		<strong>Always</strong> [<cmd command="settings save online_show_relay 1">select</cmd>]
+		<strong>In a separate message</strong> [<cmd command="settings save online_show_relay 2">select</cmd>]
+	</indent>
+</window>
