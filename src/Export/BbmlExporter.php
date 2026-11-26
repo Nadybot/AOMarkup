@@ -4,8 +4,9 @@ namespace AO\Markup\Export;
 
 use AO\Markup\Context\RenderContext;
 use AO\Markup\Document;
-use AO\Markup\Exceptions\NotImplementedException;
+use AO\Markup\Export\Game\{BbmlStyler, GameRenderer};
 use AO\Markup\Metric\{AoFontMetric, TextMetric};
+use AO\Markup\Transform\{PlaceholderResolver, WidgetExpander};
 
 /**
  * BBML, the Budabot markup language: AOML that keeps the named styles
@@ -16,18 +17,24 @@ use AO\Markup\Metric\{AoFontMetric, TextMetric};
  * not understand AoXML.
  */
 final class BbmlExporter extends BaseExporter {
-	/** @param string $bullet Prefix of unordered list items, followed by a space */
+	/**
+	 * @param string     $bullet Prefix of unordered list items, followed by a space
+	 * @param TextMetric $metric Pixel widths of the client font
+	 */
 	public function __construct(
 		public readonly string $bullet='-',
+		private TextMetric $metric=new AoFontMetric(),
 	) {
 	}
 
 	public function export(Document $document, RenderContext $context): string {
-		throw NotImplementedException::for(self::class);
+		$document = (new PlaceholderResolver())->transform($document, $context);
+		$document = (new WidgetExpander($this->metric))->transform($document, $context);
+		return (new GameRenderer($context, $this->metric, new BbmlStyler(), $this->bullet))->render($document);
 	}
 
 	public function getMetric(): TextMetric {
-		return new AoFontMetric();
+		return $this->metric;
 	}
 
 	public function getFormat(): string {

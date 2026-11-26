@@ -4,11 +4,10 @@ namespace AO\Markup\Export\Text;
 
 use AO\Markup\Context\{PlaceholderProvider, RenderContext};
 use AO\Markup\{Document, Window};
-use AO\Markup\Export\TextContent;
+use AO\Markup\Export\{Blocks, TextContent};
 use AO\Markup\Metric\TextMetric;
 use AO\Markup\Node\{
 	Align,
-	BlockNode,
 	Center,
 	CharLink,
 	ClientCommandLink,
@@ -25,16 +24,13 @@ use AO\Markup\Node\{
 	Image,
 	Indent,
 	ItemLink,
-	Keep,
 	LineBreak,
 	ListBlock,
 	NanoLink,
 	Node,
-	PageBreak,
 	Paragraph,
 	Placeholder,
 	PopupLink,
-	Repeat,
 	Section,
 	SkillLink,
 	Style,
@@ -45,7 +41,6 @@ use AO\Markup\Node\{
 	UrlLink,
 	WaypointLink,
 };
-use AO\Markup\Widget\WidgetNode;
 use Closure;
 
 /**
@@ -122,72 +117,18 @@ final class MonospaceRenderer {
 	private function blocks(array $nodes, bool $compact=false): array {
 		$lines = [];
 		$previous = null;
-		foreach (self::flattenBlocks($nodes) as $block) {
+		foreach (Blocks::flatten($nodes) as $block) {
 			$rendered = $this->block($block);
 			if (count($rendered) === 0) {
 				continue;
 			}
-			$continues = $previous instanceof Paragraph && $block instanceof Indent;
-			if ($previous !== null && !$compact && !$continues) {
+			if (!$compact && Blocks::separated($previous, $block)) {
 				$lines []= '';
 			}
 			array_push($lines, ...$rendered);
 			$previous = $block;
 		}
 		return $lines;
-	}
-
-	/**
-	 * Unwrap fragments and pagination hints, and collect inline runs into paragraphs
-	 *
-	 * @param list<Node> $nodes
-	 *
-	 * @return list<Node>
-	 */
-	private static function flattenBlocks(array $nodes): array {
-		$blocks = [];
-		$inline = [];
-		foreach ($nodes as $node) {
-			if ($node instanceof Fragment || $node instanceof Keep || $node instanceof Repeat) {
-				$children = self::flattenBlocks($node->children);
-				if (!$node instanceof Fragment || self::hasBlock($children)) {
-					if (count($inline) > 0) {
-						$blocks []= new Paragraph(...$inline);
-						$inline = [];
-					}
-					array_push($blocks, ...$children);
-					continue;
-				}
-				array_push($inline, ...$node->children);
-				continue;
-			}
-			if ($node instanceof PageBreak) {
-				continue;
-			}
-			if ($node instanceof BlockNode || $node instanceof WidgetNode) {
-				if (count($inline) > 0) {
-					$blocks []= new Paragraph(...$inline);
-					$inline = [];
-				}
-				$blocks []= $node;
-				continue;
-			}
-			$inline []= $node;
-		}
-		if (count($inline) > 0) {
-			$blocks []= new Paragraph(...$inline);
-		}
-		return $blocks;
-	}
-
-	/** @param list<Node> $nodes */
-	private static function hasBlock(array $nodes): bool {
-		foreach ($nodes as $node) {
-			if ($node instanceof BlockNode) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/** @return list<string> */
@@ -369,7 +310,7 @@ final class MonospaceRenderer {
 			static fn (Node $node): Node => $node instanceof Paragraph
 				? new Paragraph(new Style(StyleName::Strong, ...$node->children))
 				: $node,
-			self::flattenBlocks($cell->children)
+			Blocks::flatten($cell->children)
 		);
 	}
 

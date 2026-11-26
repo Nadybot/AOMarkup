@@ -77,10 +77,16 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Fields: label + `:`, padded to the widest label of the group plus one space.
 - Tables with border: columns separated by ` | `, header row underlined (`<u>`) with highlighted
   cells. Layout tables: columns separated by two spaces.
+- Every cell is aligned to the pixel position of its column (left, right or centre), not to the
+  end of the previous cell, so rounding errors don't add up along a row (±2 px per cell).
 - Lists: `- ` and `1. ` prefixes (the bullet is configurable, `-` is the default).
 - `<match>`: red brackets around the content, `<selected>`: yellow brackets.
 - `<syntax>`: highlighted, with the command prefix.
 - `<slider>`: the widget fallback (`l` bars, red `│` marker, marker text centred below it).
+- Links: `itemref://low/high/ql`, `itemid://53019/id` (nano), `skillid://id`, `user://name`,
+  `chatcmd:///tell Bot !cmd` (`/g Bot` for `via="priv"`, `/o` for `via="org"`), `chatcmd://` +
+  client command, `chatcmd:///waypoint x y pf`, `chatcmd:///start URL`. `'` in links becomes `&#39;`.
+- `<hr/>` is the image `tdb://id:GFX_GUI_FRIENDLIST_SPLITTER`, `<center>` stays `<center>`.
 - `<choice>`: the widget fallback, one option per line: the label emphasised, then `[select]`
   as a command link, or `(current)` for the selected option. With `inline`, the labels are the
   links and the selected one is shown like `<selected>`.
