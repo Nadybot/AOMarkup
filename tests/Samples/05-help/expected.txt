@@ -13,4 +13,3 @@ Example:
     /tell Nadybot !aggdef 1.2 1.5 1200
 
 See !help syntax for an explanation of the command syntax
-

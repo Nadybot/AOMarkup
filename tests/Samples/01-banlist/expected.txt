@@ -9,4 +9,3 @@ Evilguy
 Badguy
     By:       Nadyita
     Ban ends: Never
-

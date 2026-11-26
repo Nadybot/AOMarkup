@@ -12,4 +12,3 @@ Predefined Options
     No (current)
     Always [select]
     In a separate message [select]
-

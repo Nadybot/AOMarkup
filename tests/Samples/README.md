@@ -61,6 +61,9 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - `<footer>`: at the end of the window, after an empty line, unstyled.
 - Sections: title in `header2`, content indented by one level (4 spaces) where indentation is
   done with spaces.
+- Blocks are separated by an empty line, except an `<indent>` directly after a paragraph: it
+  continues the paragraph and follows it on the next line (`If you are lazy, just use` in 05).
+- Blocks inside a list item or a table cell are not separated by empty lines.
 
 ### AOML (official client)
 - Popup: `<a href="text://…">label</a>`, starting with the window colour and the title in
@@ -95,8 +98,17 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 ### ANSI / plain text
 - Monospace alignment (`MonospaceMetric`).
 - Tables with border: ` │ ` between columns and a `─┼─` rule under the header row.
-- Lists: `• ` (configurable).
+- Lists: `• ` (configurable); numbers right-aligned (` 9.`, `10.`), continuation lines indented
+  to the text.
 - ANSI: window colour as base colour, links blue and underlined, item links as OSC 8 hyperlinks.
+- A message that is more than a single popup link comes first; every window follows it after an
+  empty line (title, empty line, content).
+- Commands show their link text, or without one the command as typed (`!help syntax`, or
+  `/tell Nadybot !help syntax` with `show="tell"`; `/g Nadybot …` and `/o …` for `via`).
+- `<url>`: ANSI makes the text an OSC 8 hyperlink; plain text appends ` (URL)` unless the text is
+  the URL itself.
+- Header cells of tables are emphasised (`strong`); the last column is not padded.
+- `<hr/>` is 40 `─`. `<center>` is not centred (there is no width to centre in). Images are dropped.
 - `<choice>`: the widget fallback, like AOML.
 
 ### HTML

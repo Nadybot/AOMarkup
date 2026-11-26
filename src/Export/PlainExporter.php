@@ -4,8 +4,9 @@ namespace AO\Markup\Export;
 
 use AO\Markup\Context\RenderContext;
 use AO\Markup\Document;
-use AO\Markup\Exceptions\NotImplementedException;
+use AO\Markup\Export\Text\{MonospaceRenderer, PlainStyler};
 use AO\Markup\Metric\{MonospaceMetric, TextMetric};
+use AO\Markup\Transform\{PlaceholderResolver, WidgetExpander};
 
 /** Plain UTF-8 text with monospace tables */
 final class PlainExporter extends BaseExporter {
@@ -16,7 +17,9 @@ final class PlainExporter extends BaseExporter {
 	}
 
 	public function export(Document $document, RenderContext $context): string {
-		throw NotImplementedException::for(self::class);
+		$document = (new PlaceholderResolver())->transform($document, $context);
+		$document = (new WidgetExpander($this->getMetric()))->transform($document, $context);
+		return (new MonospaceRenderer($context, $this->getMetric(), new PlainStyler(), $this->bullet))->render($document);
 	}
 
 	public function getMetric(): TextMetric {

@@ -12,5 +12,4 @@ Example:
     Your melee/ranged init is {#FFFFFF}1200{/}:
     {u}{#219CFF}/tell Nadybot !aggdef 1.2 1.5 1200{/}{/u}
 
-{i}See {u}{#219CFF}!help syntax{/}{/u} for an explanation of the command syntax{/i}
-{/}
+{i}See {u}{#219CFF}!help syntax{/}{/u} for an explanation of the command syntax{/i}{/}
