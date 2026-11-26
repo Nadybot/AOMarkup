@@ -1,0 +1,35 @@
+{
+    "content": "",
+    "embeds": [
+        {
+            "title": "Settings Info for online_show_relay",
+            "description": "**Basic Info**\nName: **online_show_relay**\nModule: **ONLINE_MODULE**\nDescription: **Include players from your relay(s) by default**\nCurrent Value: **No**\n\nFor this setting you must choose one of the options from the list below.\n\n**Predefined Options**\n**No** (current)\n**Always**\n**In a separate message**"
+        }
+    ],
+    "components": [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 3,
+                    "custom_id": "aom-choice:settings save online_show_relay",
+                    "options": [
+                        {
+                            "label": "No",
+                            "value": "0",
+                            "default": true
+                        },
+                        {
+                            "label": "Always",
+                            "value": "1"
+                        },
+                        {
+                            "label": "In a separate message",
+                            "value": "2"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -803,7 +803,9 @@ final class AoXmlParser implements Importer {
 	private function widget(RawElement $element, bool $block, ?FlowState $state=null): array {
 		$definition = $this->widgets->definition($element->name);
 		$children = [];
-		if ($definition !== null && !$definition->void) {
+		if ($definition !== null && $definition->only !== null) {
+			$children = $this->onlyChildren($element, $definition->only);
+		} elseif ($definition !== null && !$definition->void) {
 			$children = ($block || $state === null)
 				? $this->blocks($element->children)
 				: $this->content($element, $state);
@@ -822,6 +824,28 @@ final class AoXmlParser implements Importer {
 			return $children;
 		}
 		return [$node];
+	}
+
+	/**
+	 * Children of a widget that only allows certain child elements
+	 *
+	 * @param list<string> $allowed
+	 *
+	 * @return list<Node>
+	 */
+	private function onlyChildren(RawElement $element, array $allowed): array {
+		$children = [];
+		foreach ($this->elementOnly($element) as $child) {
+			if (!($child instanceof RawElement) || !in_array($child->name, $allowed, true)) {
+				$allowedTags = implode(', ', array_map(static fn (string $name): string => "<{$name}>", $allowed));
+				$this->warn($element->line, "<{$element->name}> may only contain {$allowedTags}, dropping the rest");
+				continue;
+			}
+			array_push($children, ...($this->widgets->has($child->name)
+				? $this->widget($child, false, new FlowState())
+				: $this->inlineElement($child, new FlowState())));
+		}
+		return $children;
 	}
 
 	/** The text content of an element whose content must be plain text */

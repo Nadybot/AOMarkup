@@ -26,6 +26,8 @@ final class WidgetRegistry {
 		$registry->register(Builtin\Slider::class);
 		$registry->register(Builtin\Unavailable::class);
 		$registry->register(Builtin\Param::class);
+		$registry->register(Builtin\Choice::class);
+		$registry->register(Builtin\Option::class);
 		return $registry;
 	}
 

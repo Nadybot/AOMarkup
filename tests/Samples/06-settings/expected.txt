@@ -1,0 +1,15 @@
+Settings Info for online_show_relay
+
+Basic Info
+    Name:          online_show_relay
+    Module:        ONLINE_MODULE
+    Description:   Include players from your relay(s) by default
+    Current Value: No
+
+For this setting you must choose one of the options from the list below.
+
+Predefined Options
+    No (current)
+    Always [select]
+    In a separate message [select]
+

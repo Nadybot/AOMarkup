@@ -9,6 +9,7 @@ Every directory is one real Nadybot command output:
 | `03-aggdef`  | `!aggdef 1.2 1.7 300` | numeric field lists with units, section, `<slider>` widget, skill link |
 | `04-items`   | `!items first aid` | list, item links, `<match>`, `<selected>`, `<unavailable/>` |
 | `05-help`    | `!help aggdef` | `<syntax>`/`<param>`, `<cmd>`, `<indent>`, italic |
+| `06-settings` | `!settings change online_show_relay` | `<choice>`/`<option>` widget with native renderers |
 
 ## Files
 
@@ -72,6 +73,9 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - `<match>`: red brackets around the content, `<selected>`: yellow brackets.
 - `<syntax>`: highlighted, with the command prefix.
 - `<slider>`: the widget fallback (`l` bars, red `│` marker, marker text centred below it).
+- `<choice>`: the widget fallback, one option per line: the label emphasised, then `[select]`
+  as a command link, or `(current)` for the selected option. With `inline`, the labels are the
+  links and the selected one is shown like `<selected>`.
 
 ### BBML (relays)
 - Same layout as AOML (same metric, same padding).
@@ -87,6 +91,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Tables with border: ` │ ` between columns and a `─┼─` rule under the header row.
 - Lists: `• ` (configurable).
 - ANSI: window colour as base colour, links blue and underlined, item links as OSC 8 hyperlinks.
+- `<choice>`: the widget fallback, like AOML.
 
 ### HTML
 - No inline colours: everything is a CSS class (`aom-green`, `aom-clan`, …). `<strong>` becomes
@@ -95,6 +100,8 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Windows: `<section class="aom-window" id="…">`, linked from the message.
 - `<slider>`: native renderer with `<meter>`.
 - Commands: `<a class="aom-cmd" data-cmd="…">`, so the web UI can send them.
+- `<choice>`: native renderer, `<select class="aom-choice" data-cmd="…">` with one `<option>` per
+  option; the web UI sends `data-cmd` + space + value.
 
 ### Discord
 - A window becomes an embed. Sections become embed fields if the window consists only of an
@@ -106,3 +113,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   colours are dropped.
 - Tables and the slider become code blocks (same layout as plain text).
 - `<syntax>` and `<cmd>` become inline code, items become `[name](url)`, `<indent>` becomes `> `.
+- `<choice>`: the options are listed in the description (label in bold, `(current)` for the
+  selected one), and a select menu is added as a message component: `custom_id` is
+  `aom-choice:` + command, the selected option is the `default`.
+

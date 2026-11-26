@@ -1,0 +1,15 @@
+{#89D2E8}{#FFFF00}Settings Info for online_show_relay{/}
+
+{#FCA712}Basic Info{/}
+    Name:          {#FFFFFF}online_show_relay{/}
+    Module:        {#FFFFFF}ONLINE_MODULE{/}
+    Description:   {#FFFFFF}Include players from your relay(s) by default{/}
+    Current Value: {#FFFFFF}No{/}
+
+For this setting you must choose one of the options from the list below.
+
+{#FCA712}Predefined Options{/}
+    {#FFFFFF}No{/} (current)
+    {#FFFFFF}Always{/} [{u}{#219CFF}select{/}{/u}]
+    {#FFFFFF}In a separate message{/} [{u}{#219CFF}select{/}{/u}]
+{/}

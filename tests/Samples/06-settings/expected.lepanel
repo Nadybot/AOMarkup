@@ -1,0 +1,16 @@
+<a href="lepanel://v1/<panel title='Settings Info for online_show_relay'>
+<section title='Basic Info' open>
+<stat label='Name' value='online_show_relay'/>
+<stat label='Module' value='ONLINE_MODULE'/>
+<stat label='Description' value='Include players from your relay(s) by default'/>
+<stat label='Current Value' value='No'/>
+</section>
+<text>For this setting you must choose one of the options from the list below.</text>
+<section title='Predefined Options' open>
+<select cmd='/tell Nadybot !settings save online_show_relay'>
+<option value='0' selected>No</option>
+<option value='1'>Always</option>
+<option value='2'>In a separate message</option>
+</select>
+</section>
+</panel>">Settings Info for online_show_relay</a>

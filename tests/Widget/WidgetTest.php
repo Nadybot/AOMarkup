@@ -4,9 +4,9 @@ namespace AO\Markup\Tests\Widget;
 
 use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
 use AO\Markup\Metric\{AoFontMetric, MonospaceMetric};
-use AO\Markup\Node\{LineBreak, Node, Paragraph, Style, Text};
-use AO\Markup\Widget\Builtin\{Param, Slider, Unavailable};
-use AO\Markup\Widget\{ExpansionContext, WidgetRegistry};
+use AO\Markup\Node\{CommandChannel, CommandLink, LineBreak, Node, Paragraph, Style, Text};
+use AO\Markup\Widget\Builtin\{Choice, Option, Param, Slider, Unavailable};
+use AO\Markup\Widget\{ExpansionContext, WidgetNode, WidgetRegistry};
 use PHPUnit\Framework\TestCase;
 
 final class WidgetTest extends TestCase {
@@ -38,11 +38,31 @@ final class WidgetTest extends TestCase {
 		);
 	}
 
+	public function testChoiceFallback(): void {
+		$ctx = new ExpansionContext(new RenderContext(new ArrayPlaceholderProvider([])), new MonospaceMetric());
+		$options = [
+			new WidgetNode(new Option('0', true), new Text('No')),
+			new WidgetNode(new Option('1'), new Text('Always')),
+		];
+		$choice = new Choice('settings save x', CommandChannel::Priv);
+		$this->assertSame("No (current)\nAlways [select]", self::plain($choice->fallback($ctx, ...$options)));
+
+		$node = $choice->fallback($ctx, ...$options);
+		$this->assertInstanceOf(Paragraph::class, $node);
+		$link = $node->children[5];
+		$this->assertInstanceOf(CommandLink::class, $link);
+		$this->assertSame('settings save x 1', $link->command);
+		$this->assertSame(CommandChannel::Priv, $link->via);
+
+		$inline = new Choice('ofabarmor nt', inline: true);
+		$this->assertSame('No Always', self::plain($inline->fallback($ctx, ...$options)));
+	}
+
 	private static function plain(Node $node): string {
 		return match (true) {
 			$node instanceof Text => $node->text,
 			$node instanceof LineBreak => "\n",
-			$node instanceof Style, $node instanceof Paragraph => implode('', array_map(self::plain(...), $node->children)),
+			$node instanceof Style, $node instanceof Paragraph, $node instanceof CommandLink => implode('', array_map(self::plain(...), $node->children)),
 			default => throw new \LogicException($node::class),
 		};
 	}

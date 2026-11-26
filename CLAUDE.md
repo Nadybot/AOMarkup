@@ -36,6 +36,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   apply their own theme, e.g. NadyNative to older Nadybots).
 - Relays never carry lepanel markup.
 - Importers never produce widgets.
+- `<choice command>` with `<option value selected?>` is a widget (fallback: list with `[select]`
+  links; native: HTML `<select>`, Discord select menu). `<match>`/`<selected>` stay inline styles.
 - `<pagebreak/>` is a possible break, never a forced one: if a window has any, pages end only
   there, and only where needed (`docs/AoXML.md` §2.2).
 - Boolean attributes: `<table border>` is allowed as input; canonical form is `border="true"`.
@@ -56,7 +58,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 ## Open questions
 - lepanel output is speculative until the Lost Eden devs settle their tags. Requested from them:
   `<table>` (layout vs. border), `<ul>`/`<ol>`, `<stat>` with static `value`/`unit`,
-  `<bar>` with labels and marker, named windows that are reused (with back/forward), and later
+  `<bar>` with labels and marker, `<select>` dropdowns that run a command with the chosen value
+  (used by `<choice>`), named windows that are reused (with back/forward), and later
   replies into the window a command was clicked in (request id round trip).
 
 ## Conventions

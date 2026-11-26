@@ -171,6 +171,15 @@ Widgets are registered elements with a mandatory fallback to core elements, see
 | `<slider/>` | `pos`, `min`=0, `max`=100, `left`?, `right`?, `marker`? | A horizontal scale with a marker, e.g. the agg/def slider. |
 | `<unavailable/>` | | Marks something as not available in game. |
 | `<param>` | | A command parameter inside `<syntax>`, e.g. `<param>attack time</param>`. |
+| `<choice>` | `command`, `via`?, `inline`? | A choice between values. Choosing an option runs the bot command `command` followed by a space and the option's `value`; `via` works like on `<cmd>`. Contains `<option>`s only. Targets with dropdowns (web UI, Discord select menus, maybe lepanel) show one; the fallback lists the options one per line, or next to each other with `inline`. |
+| `<option>` | `value`, `selected`? | An option of a `<choice>`. The content is the label and may contain markup. `selected` marks the current value. |
+
+```xml
+<choice command="settings save online_show_relay">
+	<option value="0" selected>No</option>
+	<option value="1">Always</option>
+</choice>
+```
 
 ## 6. BBML
 BBML, the Budabot markup language (`<highlight>…<end>`, `<tab>`, `<header2>`, `<myname>`,

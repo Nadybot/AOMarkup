@@ -1,0 +1,15 @@
+<a href="text://<header>Settings Info for online_show_relay<end>
+
+<header2>Basic Info<end>
+<tab>Name: <highlight>online_show_relay<end>
+<tab>Module: <highlight>ONLINE_MODULE<end>
+<tab>Description: <highlight>Include players from your relay(s) by default<end>
+<tab>Current Value: <highlight>No<end>
+
+For this setting you must choose one of the options from the list below.
+
+<header2>Predefined Options<end>
+<tab><highlight>No<end> [<a href='chatcmd:///tell <myname> settings save online_show_relay 0'>select</a>]
+<tab><highlight>Always<end> [<a href='chatcmd:///tell <myname> settings save online_show_relay 1'>select</a>]
+<tab><highlight>In a separate message<end> [<a href='chatcmd:///tell <myname> settings save online_show_relay 2'>select</a>]
+">Settings Info for online_show_relay</a>

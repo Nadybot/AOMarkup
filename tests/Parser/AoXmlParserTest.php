@@ -538,6 +538,26 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertWarning('<slider> has no attribute "colour"');
 	}
 
+	public function testChoice(): void {
+		$this->assertTree(
+			<<<'TREE'
+				WidgetNode Choice command="settings save x" via=priv
+				  WidgetNode Option value="0" selected=true
+				    Text "No"
+				  WidgetNode Option value="1"
+				    Style strong
+				      Text "Yes"
+				TREE,
+			"<choice command=\"settings save x\" via=\"priv\">\n\t<option value=\"0\" selected>No</option>\n\t<option value=\"1\"><strong>Yes</strong></option>\n</choice>"
+		);
+		$this->assertNoWarnings();
+	}
+
+	public function testChoiceDropsOtherContent(): void {
+		$this->parse('<choice command="x">text<option value="1">A</option><strong>B</strong></choice>');
+		$this->assertWarning('<choice> may only contain <option>, dropping the rest');
+	}
+
 	public function testInlineWidgetWithContent(): void {
 		$this->assertTree(
 			<<<'TREE'

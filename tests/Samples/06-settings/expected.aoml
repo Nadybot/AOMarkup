@@ -1,0 +1,14 @@
+<a href="text://<font color=#89D2E8><font color=#FFFF00>Settings Info for online_show_relay</font>
+
+<font color=#FCA712>Basic Info</font>
+    Name:            <font color=#FFFFFF>online_show_relay</font>
+    Module:          <font color=#FFFFFF>ONLINE_MODULE</font>
+    Description:    <font color=#FFFFFF>Include players from your relay(s) by default</font>
+    Current Value: <font color=#FFFFFF>No</font>
+
+For this setting you must choose one of the options from the list below.
+
+<font color=#FCA712>Predefined Options</font>
+    <font color=#FFFFFF>No</font> (current)
+    <font color=#FFFFFF>Always</font> [<a href='chatcmd:///tell Nadybot !settings save online_show_relay 1'>select</a>]
+    <font color=#FFFFFF>In a separate message</font> [<a href='chatcmd:///tell Nadybot !settings save online_show_relay 2'>select</a>]">Settings Info for online_show_relay</a>
