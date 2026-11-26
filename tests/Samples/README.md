@@ -78,7 +78,8 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   links and the selected one is shown like `<selected>`.
 
 ### BBML (relays)
-- Same layout as AOML (same metric, same padding).
+- Same layout as AOML (same metric, same padding), but indentation (sections, `<indent>`) is
+  written as `<tab>`, one per level, like Nadybot does. Alignment padding stays spaces.
 - Theme colours become their BBML names, closed with `<end>`: `<header>`, `<header2>`,
   `<highlight>`, `<green>`, `<neutral>`, … `<strong>` and `<syntax>` become `<highlight>`, explicit `<color>`
   stays `<font color=…>…</font>`.
