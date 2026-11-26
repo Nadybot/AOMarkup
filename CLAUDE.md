@@ -36,6 +36,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   apply their own theme, e.g. NadyNative to older Nadybots).
 - Relays never carry lepanel markup.
 - Importers never produce widgets.
+- Closing notes of a window (credits, legends, sources) are `<footer>`, never a guessed
+  "last paragraph".
 - `<choice command>` with `<option value selected?>` is a widget (fallback: list with `[select]`
   links; native: HTML `<select>`, Discord select menu). `<match>`/`<selected>` stay inline styles.
 - `<pagebreak/>` is a possible break, never a forced one: if a window has any, pages end only

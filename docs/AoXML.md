@@ -56,6 +56,7 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 | `<pagebreak/>` | | A *possible* page break, never a forced one. See [2.2](#22-pagination). |
 | `<keep>` | | Never split this content across pages. |
 | `<repeat>` | | Repeat this content at the top of every page of the current popup. |
+| `<footer>` | | A closing note of a window: credits ("History provided by …"), legends, sources. Only inside a `<window>`; always shown at the end of the window, wherever it is in the source. Several footers are joined in order. Inline content. |
 
 ### 2.1 Table alignment
 The `align` of a `<th>` is the default alignment of the cells below it in the same
@@ -96,7 +97,7 @@ can only give hints; it never decides where a page ends.
   between two of them does not fit on a page on its own, that part is split by the rules below.
 - Without `<pagebreak/>`, pages end between blocks, preferably before a `<section>`, and between
   table rows.
-- `<keep>` is never split, unless it does not fit on a page on its own. `<repeat>` and header rows
+- `<keep>` is never split, unless it does not fit on a page on its own. A `<footer>` is only on the last page. `<repeat>` and header rows
   of tables are repeated at the top of every page.
 - Targets without pagination ignore `<pagebreak/>`; it renders nothing.
 

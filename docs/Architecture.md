@@ -27,7 +27,7 @@ contain `PopupLink`s: there is no nesting.
 Every node is an immutable value object. There are three kinds:
 
 - **Block nodes**: `Paragraph`, `Section`, `FieldList`/`Field`/`FieldValue`, `Table`/`TableRow`/`TableCell`,
-  `ListBlock`/`ListItem`, `Indent`, `Heading`, `Center`, `HorizontalRule`, `PageBreak`,
+  `ListBlock`/`ListItem`, `Indent`, `Heading`, `Center`, `HorizontalRule`, `PageBreak`, `Footer`,
   `Keep`, `Repeat`
 - **Inline nodes**: `Text`, `LineBreak`, `Style`, `Color`, `Image`, `Placeholder`,
   links (`ItemLink`, `NanoLink`, `SkillLink`, `CharLink`, `CommandLink`, `ClientCommandLink`,
@@ -36,7 +36,8 @@ Every node is an immutable value object. There are three kinds:
 
 Block containers (the body, `Window`, `Section`, `ListItem`, `TableCell`, `Indent`,
 `Center`, `Keep`, `Repeat`) contain block nodes only: inline content in them is always
-wrapped in a `Paragraph`. `Field::$name`, `FieldValue`, `Heading` and all inline nodes contain inline nodes only.
+wrapped in a `Paragraph`. `Field::$name`, `FieldValue`, `Heading`, `Footer` and all inline nodes contain inline nodes only.
+A window's `Footer` is always its last child.
 
 ## Importers (`AO\Markup\Import`)
 `Importer::import(string): Document`. Importers never produce widgets: guessing a

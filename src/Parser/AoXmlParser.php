@@ -18,6 +18,7 @@ use AO\Markup\Node\{
 	Field,
 	FieldList,
 	FieldValue,
+	Footer,
 	Fragment,
 	Heading,
 	HorizontalRule,
@@ -66,7 +67,7 @@ final class AoXmlParser implements Importer {
 	/** Elements that start on their own line */
 	private const BLOCK = [
 		'section', 'dl', 'dt', 'dd', 'table', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'indent',
-		'h1', 'h2', 'center', 'hr', 'pagebreak', 'keep', 'repeat', 'window',
+		'h1', 'h2', 'center', 'hr', 'pagebreak', 'keep', 'repeat', 'footer', 'window',
 	];
 
 	/** Elements that flow within a line, apart from the named styles */
@@ -95,6 +96,9 @@ final class AoXmlParser implements Importer {
 
 	/** Currently parsing the content of a window */
 	private bool $inWindow = false;
+
+	/** @var list<Node> Content of the <footer>s of the window being parsed */
+	private array $footer = [];
 
 	public function __construct(
 		private WidgetRegistry $widgets=new WidgetRegistry(),
@@ -271,6 +275,7 @@ final class AoXmlParser implements Importer {
 			'hr' => [new HorizontalRule()],
 			'pagebreak' => [new PageBreak()],
 			'window' => $this->window($element, $root),
+			'footer' => $this->footer($element),
 			'tr', 'th', 'td', 'li', 'dt', 'dd' => $this->misplaced($element),
 			default => $this->widget($element, true),
 		};
@@ -307,11 +312,35 @@ final class AoXmlParser implements Importer {
 			$this->warn($element->line, "Duplicate window id \"{$id}\", ignoring this window");
 			return [];
 		}
-		$inWindow = $this->inWindow;
-		$this->inWindow = true;
+		[$inWindow, $footer] = [$this->inWindow, $this->footer];
+		[$this->inWindow, $this->footer] = [true, []];
 		$children = $this->blocks($element->children);
-		$this->inWindow = $inWindow;
+		array_push($children, ...$this->collectedFooter());
+		[$this->inWindow, $this->footer] = [$inWindow, $footer];
 		$this->windows[$id] = new Window($id, $title, ...$children);
+		return [];
+	}
+
+	/** @return list<Footer> The footer collected for the current window, if any */
+	private function collectedFooter(): array {
+		return count($this->footer) > 0 ? [new Footer(...$this->footer)] : [];
+	}
+
+	/**
+	 * Collect a <footer>; the window adds it at its end
+	 *
+	 * @return list<Node> Empty in a window, a paragraph outside of one
+	 */
+	private function footer(RawElement $element): array {
+		$content = $this->inline($element->children);
+		if (!$this->inWindow) {
+			$this->warn($element->line, '<footer> is only allowed inside a <window>, showing it as a paragraph');
+			return count($content) > 0 ? [new Paragraph(...$content)] : [];
+		}
+		if (count($this->footer) > 0 && count($content) > 0) {
+			$this->footer []= new LineBreak();
+		}
+		array_push($this->footer, ...$content);
 		return [];
 	}
 

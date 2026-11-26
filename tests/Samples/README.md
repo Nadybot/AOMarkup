@@ -58,6 +58,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   all numeric is right-aligned.
 - A field with several values shows the first next to the key and the others below it, in the
   value column.
+- `<footer>`: at the end of the window, after an empty line, unstyled.
 - Sections: title in `header2`, content indented by one level (4 spaces) where indentation is
   done with spaces.
 
@@ -101,15 +102,16 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Windows: `<section class="aom-window" id="…">`, linked from the message.
 - `<slider>`: native renderer with `<meter>`.
 - Commands: `<a class="aom-cmd" data-cmd="…">`, so the web UI can send them.
+- `<footer>`: `<footer class="aom-footer">`.
 - `<choice>`: native renderer, `<select class="aom-choice" data-cmd="…">` with one `<option>` per
   option; the web UI sends `data-cmd` + space + value.
 
 ### Discord
 - A window becomes an embed. Sections become embed fields if the window consists only of an
-  optional intro, sections, and an optional plain-text outro. Otherwise everything goes into the
+  optional intro, sections, and an optional `<footer>`. Otherwise everything goes into the
   description.
 - Sections in the description: a `**title**` line, followed by the content.
-- A trailing plain-text paragraph becomes the embed footer.
+- `<footer>` becomes the embed footer (plain text, Discord has no Markdown there).
 - `<strong>` → `**bold**`, `<match>` → `__underline__`, `<selected>` → `**bold**`, `<i>` → `*italic*`,
   colours are dropped.
 - Tables and the slider become code blocks (same layout as plain text).

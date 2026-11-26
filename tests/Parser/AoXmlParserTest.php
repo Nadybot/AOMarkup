@@ -497,6 +497,38 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertWarning('Duplicate window id "x"');
 	}
 
+	public function testFooterGoesToTheEnd(): void {
+		$doc = $this->parse(
+			"<window id=\"w\" title=\"W\">\n\t<footer>Data by <strong>Auno</strong></footer>\n\tText\n"
+			. "\t<section title=\"S\"><footer>Based on\nRINGBOT</footer>x</section>\n</window>"
+		);
+		$this->assertSame(
+			<<<'TREE'
+				Window w "W"
+				  Paragraph
+				    Text "Text"
+				  Section title="S"
+				    Paragraph
+				      Text "x"
+				  Footer
+				    Text "Data by "
+				    Style strong
+				      Text "Auno"
+				    LineBreak
+				    Text "Based on"
+				    LineBreak
+				    Text "RINGBOT"
+				TREE,
+			TreeDump::document($doc)
+		);
+		$this->assertNoWarnings();
+	}
+
+	public function testFooterOutsideWindow(): void {
+		$this->assertTree("Paragraph\n  Text \"Credits\"", '<footer>Credits</footer>');
+		$this->assertWarning('<footer> is only allowed inside a <window>');
+	}
+
 	public function testMissingWindow(): void {
 		$this->assertTree("Paragraph\n  PopupLink window=\"nope\"\n    Text \"x\"", '<popup window="nope">x</popup>');
 		$this->assertWarning('<popup window="nope"> refers to a window that does not exist');
