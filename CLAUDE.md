@@ -78,3 +78,4 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - Checks: `composer tests` (PHPUnit, PHPStan level 8, phpcs, mago if installed);
   style via `vendor/bin/php-cs-fixer.phar fix`.
 - `bin/show-sample <sample> [ansi|txt|aoml|bbml|lepanel|html|discord.json|aoxml|legacy]` shows a sample.
+- `bin/font-calibration` prints test popups to measure the client font (`docs/FontCalibration.md`).

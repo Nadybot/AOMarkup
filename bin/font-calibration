@@ -1,0 +1,62 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+// Print AOML popups to measure the font of the AO client, see docs/FontCalibration.md
+//
+//   bin/font-calibration [repeat]
+//
+// Every line is "|" + a character repeated [repeat] times (default 20) + "|":
+// the distance between the bars, minus one bar, divided by [repeat] is the
+// width of the character. Kerning pages compare pairs with their unpaired form.
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
+use AO\Markup\Document;
+use AO\Markup\Export\AomlExporter;
+use AO\Markup\Node\{Fragment, LineBreak, Node, Paragraph, PopupLink, Text};
+use AO\Markup\Window;
+
+$repeat = max(1, (int)($argv[1] ?? 20));
+
+// Printable ASCII and Latin-1, plus characters our exporters use
+$chars = [];
+foreach ([[0x20, 0x7E], [0xA0, 0xFF]] as [$from, $to]) {
+	for ($code = $from; $code <= $to; $code++) {
+		$chars []= mb_chr($code, 'UTF-8');
+	}
+}
+array_push($chars, '│', '•', '€', '„', '“', '”', '‘', '’', '–', '—', '…');
+
+$line = static fn (string $content, string $note): array => [new Text("|{$content}|   {$note}"), new LineBreak()];
+
+$pages = [];
+foreach (array_chunk($chars, 40) as $chunk) {
+	$lines = [];
+	foreach ($chunk as $char) {
+		$code = sprintf('U+%04X', mb_ord($char, 'UTF-8'));
+		array_push($lines, ...$line(str_repeat($char, $repeat), $code));
+	}
+	$pages []= $lines;
+}
+
+// Kerning: with kerning, a line of pairs is shorter than the same letters unpaired
+$kerning = [];
+foreach (['AV', 'To', 'Te', 'Yo', 'LT', 'P,', 'y.', '11', 'Av', 'r.'] as $pair) {
+	$half = intdiv($repeat, 2);
+	array_push($kerning, ...$line(str_repeat($pair, $half), "{$pair} paired"));
+	array_push($kerning, ...$line(str_repeat($pair[0], $half) . str_repeat(mb_substr($pair, 1), $half), "{$pair} unpaired"));
+}
+$pages []= $kerning;
+
+$context = new RenderContext(new ArrayPlaceholderProvider([]));
+foreach ($pages as $i => $lines) {
+	$id = 'page' . ($i + 1);
+	$title = 'Font calibration ' . ($i + 1) . '/' . count($pages);
+	array_pop($lines);
+	$document = new Document(
+		new Fragment(new Paragraph(new PopupLink($id, new Text($title)))),
+		[$id => new Window($id, $title, new Paragraph(...$lines))]
+	);
+	echo (new AomlExporter())->export($document, $context), "\n";
+}
