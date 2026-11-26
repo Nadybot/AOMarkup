@@ -110,16 +110,16 @@ final class SamplesTest extends TestCase {
 	}
 
 	/**
-	 * With table detection, samples with tables give expected-tables.aoxml, all others expected-import.aoxml
+	 * With all detectors, samples with tables or lists give expected-detected.aoxml, all others expected-import.aoxml
 	 *
-	 * The second half guards against tables found where there are none.
+	 * The second half guards against tables and lists found where there are none.
 	 */
 	#[DataProvider('provideSampleDirs')]
-	public function testImportWithTables(string $sample): void {
+	public function testImportWithDetection(string $sample): void {
 		$dir = self::SAMPLE_DIR . "/{$sample}";
-		$file = is_file("{$dir}/expected-tables.aoxml") ? "{$dir}/expected-tables.aoxml" : "{$dir}/expected-import.aoxml";
+		$file = is_file("{$dir}/expected-detected.aoxml") ? "{$dir}/expected-detected.aoxml" : "{$dir}/expected-import.aoxml";
 		$logger = TestLogger::create();
-		$document = (new BbmlImporter($logger, detectTables: true))->import(file_get_contents("{$dir}/legacy.bbml"));
+		$document = (new BbmlImporter($logger, detectTables: true, detectLists: true))->import(file_get_contents("{$dir}/legacy.bbml"));
 		$this->assertSame(file_get_contents($file), (new AoXmlSerializer())->export($document, self::context()));
 		$this->assertSame([], array_map(static fn ($r): string => (string)$r->message, $logger->records->all()));
 	}

@@ -102,8 +102,34 @@ final class BbmlImporterTest extends TestCase {
 		$this->assertSame([], $logger->records->all());
 	}
 
+	/** @return iterable<string,array{string,string}> */
+	public static function provideLists(): iterable {
+		yield 'bullets' => ["Items:\n- one\n- two <highlight>2<end>\n- three", "Items:\n\n<ul>\n\t<li>one</li>\n\t<li>two <strong>2</strong></li>\n\t<li>three</li>\n</ul>\n"];
+		yield 'the same bullet only' => ["* a\n* b\n- c", "<ul>\n\t<li>a</li>\n\t<li>b</li>\n</ul>\n\n- c\n"];
+		yield 'numbers without gaps' => ["3. x\n4. y\n6. z", "<ol start=\"3\">\n\t<li>x</li>\n\t<li>y</li>\n</ol>\n\n6. z\n"];
+		yield 'nested lists' => [
+			"- a\n    - a1\n    - a2\n- b",
+			"<ul>\n\t<li>\n\t\ta\n\n\t\t<ul>\n\t\t\t<li>a1</li>\n\t\t\t<li>a2</li>\n\t\t</ul>\n\t</li>\n\t<li>b</li>\n</ul>\n",
+		];
+		yield 'one line is no list' => ["- only one\ntext", "- only one\ntext\n"];
+		yield 'a bullet needs a space' => ["-5 degrees\n-3 degrees", "-5 degrees\n-3 degrees\n"];
+	}
+
+	#[DataProvider('provideLists')]
+	public function testLists(string $bbml, string $aoxml): void {
+		$logger = TestLogger::create();
+		$this->assertSame($aoxml, self::serialize((new BbmlImporter($logger, detectLists: true))->import($bbml)));
+		$this->assertSame([], $logger->records->all());
+	}
+
+	public function testOurOwnAomlListsComeBack(): void {
+		$aoml = "<a href=\"text://<font color=#89D2E8><font color=#FFFF00>T</font>\n\n- a\n- b\">T</a>";
+		$this->assertStringContainsString("<ul>\n\t\t<li>a</li>\n\t\t<li>b</li>\n\t</ul>", self::serialize((new BbmlImporter(detectLists: true))->import($aoml)));
+	}
+
 	public function testTablesAreOnlyDetectedWhenAskedFor(): void {
 		$this->assertSame("a | b\nc | d\n", self::serialize((new BbmlImporter())->import("a | b\nc | d")));
+		$this->assertSame("- a\n- b\n", self::serialize((new BbmlImporter())->import("- a\n- b")));
 	}
 
 	public function testPlainAomlWithTheBotsName(): void {

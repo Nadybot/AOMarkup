@@ -7,7 +7,7 @@ use function Safe\{preg_match, preg_replace};
 use AO\Markup\Context\PlaceholderProvider;
 use AO\Markup\{Document, Window};
 use AO\Markup\Export\TextContent;
-use AO\Markup\Import\Bbml\{BbmlLine, BbmlToken, BbmlTokenizer, InlineStack, TableDetector};
+use AO\Markup\Import\Bbml\{BbmlLine, BbmlToken, BbmlTokenizer, InlineStack, ListDetector, TableDetector};
 use AO\Markup\Node\{
 	Center,
 	CharLink,
@@ -82,12 +82,15 @@ final class BbmlImporter implements Importer {
 	 * @param ?string $symbol       Command prefix of the bot, for the same purpose; BBML uses <symbol>
 	 * @param bool    $detectTables Turn lines with "|" between columns into tables. This guesses, so
 	 *                              it is off by default; see docs/AoXML.md §6.1
+	 * @param bool    $detectLists  Turn lines that start with "- ", "* ", "• " or "1. " into lists.
+	 *                              This guesses, too; see docs/AoXML.md §6.2
 	 */
 	public function __construct(
 		private LoggerInterface $logger=new NullLogger(),
 		private ?string $botName=null,
 		private ?string $symbol=null,
 		private bool $detectTables=false,
+		private bool $detectLists=false,
 	) {
 	}
 
@@ -286,11 +289,16 @@ final class BbmlImporter implements Importer {
 	 * @return list<Node>
 	 */
 	private function fold(array $items, int $level=0, bool $inWindow=true): array {
+		$inline = function (array $tokens) use ($inWindow): array {
+			$open = [];
+			return $this->inline(array_values($tokens), $open, $inWindow);
+		};
 		if ($this->detectTables) {
-			$items = (new TableDetector(function (array $tokens) use ($inWindow): array {
-				$open = [];
-				return $this->inline($tokens, $open, $inWindow);
-			}))->detect($items, $level);
+			$items = (new TableDetector($inline))->detect($items, $level);
+		}
+		if ($this->detectLists) {
+			$fold = fn (array $lines): array => $this->fold(array_values($lines), $level + 1, $inWindow);
+			$items = (new ListDetector($inline, $fold))->detect($items, $level);
 		}
 		$blocks = [];
 		$paragraph = [];

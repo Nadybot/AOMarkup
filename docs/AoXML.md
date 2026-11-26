@@ -230,7 +230,7 @@ It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like
 Alignment with spaces only works in fonts we know; Lost Eden lets every window have its own
 font size. `new BbmlImporter(detectTables: true)` therefore turns tables in BBML into real
 `<table>`s. This **guesses**, so it is off by default, and only one, unambiguous pattern is
-recognised so far (the samples `02-history` and `07-history-pages`, `expected-tables.aoxml`):
+recognised so far (the samples `02-history` and `07-history-pages`, `expected-detected.aoxml`):
 
 - Columns are separated by `|`: a single `|`, plain or in a colour of its own
   (`<highlight>|<end>`); `||` is not a separator (bars, `||` as text).
@@ -246,6 +246,17 @@ recognised so far (the samples `02-history` and `07-history-pages`, `expected-ta
 
 Columns aligned with spaces only (`Text::alignNumber()`, black zeros) are not recognised yet;
 that needs real messages to tune and measure against.
+
+### 6.2 List detection
+`new BbmlImporter(detectLists: true)` turns lists into `<ul>`/`<ol>`, like Nadybot's
+`WebChatConverter` does for the web UI. It guesses as well, so it is off by default.
+
+- A list is a run of at least two consecutive lines on the same indentation level that start with
+  the same bullet and a space (`- `, `* `, `• `), or with numbers that count up without gaps
+  (`1. `, `2. `, …; the first number is the `start` of the `<ol>`). `-5 degrees` is no item.
+- Deeper indented lines (a `<tab>` or 4 spaces) right after an item belong to it: continuation
+  lines and nested lists. Lines indented by less are not part of the item.
+- Both detectors can be combined; tables are found first.
 - **Export:** `BbmlExporter` writes BBML for relays: named styles stay named, so the receiving
   bot applies its own theme, while placeholders are resolved, since the receiver would fill in
   its own name. `AomlExporter` writes Funcom AOML with all colours resolved.

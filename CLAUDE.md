@@ -37,8 +37,9 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - Relays never carry lepanel markup.
 - Importers never produce widgets, and never guess structure: `BbmlImporter` translates literally
   but cleanly (`docs/AoXML.md` §6); each sample's `expected-import.aoxml` is its spec. Guessing is
-  only allowed as an explicit option (`detectTables`, §6.1, spec: `expected-tables.aoxml`); with it,
-  samples without tables must still give `expected-import.aoxml`.
+  only allowed as an explicit option (`detectTables`, `detectLists`, §6.1/§6.2, spec:
+  `expected-detected.aoxml`); with them, samples without tables or lists must still give
+  `expected-import.aoxml`.
 - Closing notes of a window (credits, legends, sources) are `<footer>`, never a guessed
   "last paragraph".
 - `<choice command>` with `<option value selected?>` is a widget (fallback: list with `[select]`
