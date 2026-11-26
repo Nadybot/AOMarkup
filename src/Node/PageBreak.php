@@ -2,6 +2,10 @@
 
 namespace AO\Markup\Node;
 
-/** Start a new page here, if the target paginates */
+/**
+ * A possible page break, never a forced one
+ *
+ * If a window has any, the Paginator ends pages only at them, and only where needed.
+ */
 final class PageBreak implements BlockNode {
 }

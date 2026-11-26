@@ -10,8 +10,11 @@ use AO\Markup\Export\Exporter;
 /**
  * Splits a document into pages that each fit into $maxLength bytes of the target format
  *
- * Breaks between blocks, sections and table rows; honours <keep>, <pagebreak>,
- * <repeat> and repeats header rows of tables.
+ * Pages are filled as far as possible. If a window contains PageBreaks, pages end only
+ * at them (at the last one that still fits); only content between two PageBreaks that
+ * does not fit on a page by itself is split further. Otherwise pages end between blocks,
+ * preferably before sections, and between table rows. Honours <keep>, repeats <repeat>
+ * and header rows of tables. See docs/AoXML.md §2.2.
  */
 final class Paginator {
 	/** @return list<Document> */

@@ -31,6 +31,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   apply their own theme, e.g. NadyNative to older Nadybots).
 - Relays never carry lepanel markup.
 - Importers never produce widgets.
+- `<pagebreak/>` is a possible break, never a forced one: if a window has any, pages end only
+  there, and only where needed (`docs/AoXML.md` §2.2).
 - Boolean attributes: `<table border>` is allowed as input; canonical form is `border="true"`.
 - Table alignment: `<th align>` is the default for its column, `<td align>` overrides it.
   No `columns` attribute. Details in `docs/AoXML.md` §2.1.

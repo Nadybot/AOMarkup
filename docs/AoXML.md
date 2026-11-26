@@ -40,7 +40,7 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 
 | Element | Attributes | Meaning |
 |---|---|---|
-| `<section>` | `title` | A titled block. Replaces `<header2>` + `<tab>`-indented lines. Preferred page-break position; kept together when possible. |
+| `<section>` | `title` | A titled block. Replaces `<header2>` + `<tab>`-indented lines. Preferred page-break position if the window has no `<pagebreak/>`; kept together when possible. |
 | `<field>` | `name`, `unit`? | A key/value line. Consecutive fields form an aligned group. The value is highlighted; `unit` follows it unhighlighted. If all values of a group are numeric, they are right-aligned. |
 | `<table>` | `border`? | A table. Without `border` it is a pure layout table. |
 | `<tr>` | | A row. |
@@ -51,7 +51,7 @@ Status: **draft**. Everything in here is up for discussion until the first relea
 | `<h1>`, `<h2>` | | Headings. |
 | `<center>` | | Centered content. |
 | `<hr/>` | | A horizontal separator. |
-| `<pagebreak/>` | | Start a new page here, if the target paginates. |
+| `<pagebreak/>` | | A *possible* page break, never a forced one. See [2.2](#22-pagination). |
 | `<keep>` | | Never split this content across pages. |
 | `<repeat>` | | Repeat this content at the top of every page of the current popup. |
 
@@ -72,6 +72,21 @@ column; a `<td align>` overrides it for that cell.
   that has one.
 - A cell with `colspan` does not inherit; it is `left` unless it has its own `align`.
 - Everything else is `left`, in particular every cell of a table without `<th>`.
+
+### 2.2 Pagination
+Targets with a size limit (AOML, BBML, lepanel) split a window into several pages. The source
+can only give hints; it never decides where a page ends.
+
+- `<pagebreak/>` marks a position where a page *may* end. It is not a forced break: pages are
+  filled as far as possible and end at the last `<pagebreak/>` that still fits. A window that
+  fits on one page is not split at all.
+- If a window contains at least one `<pagebreak/>`, pages end **only** there. Only if the content
+  between two of them does not fit on a page on its own, that part is split by the rules below.
+- Without `<pagebreak/>`, pages end between blocks, preferably before a `<section>`, and between
+  table rows.
+- `<keep>` is never split, unless it does not fit on a page on its own. `<repeat>` and header rows
+  of tables are repeated at the top of every page.
+- Targets without pagination ignore `<pagebreak/>`; it renders nothing.
 
 ## 3. Inline elements
 

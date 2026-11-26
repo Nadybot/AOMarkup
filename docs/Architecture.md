@@ -49,7 +49,7 @@ Pure `Document → Document` steps, combined per exporter:
 | `PlaceholderResolver` | Replaces `<myname/>`, `<symbol/>`, … with text |
 | `WidgetExpander` | Replaces widgets without a native renderer by their `fallback()` |
 | `FieldGrouper` | Groups consecutive `Field`s into a `FieldGroup` |
-| `Paginator` | Splits a document into several, respecting `<keep>`, `<repeat>`, sections and table rows; measured in the target format |
+| `Paginator` | Splits a document into several, measured in the target format; ends pages only where needed, and only at `<pagebreak/>`s if there are any (`docs/AoXML.md` §2.2) |
 
 ## Exporters (`AO\Markup\Export`)
 `Exporter::export(Document, RenderContext): string`.
