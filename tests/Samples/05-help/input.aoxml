@@ -7,9 +7,13 @@
 	</section>
 
 	If you are lazy, just use
-	<indent><syntax>weapon <param>drop weapon into chat</param></syntax></indent>
+
+	<indent>
+		<syntax>weapon <param>drop weapon into chat</param></syntax>
+	</indent>
 
 	Example:
+
 	<indent>
 		Your weapon has an attack time of <strong>1.2</strong> seconds and a recharge time of <strong>1.5</strong> seconds.
 		Your melee/ranged init is <strong>1200</strong>:

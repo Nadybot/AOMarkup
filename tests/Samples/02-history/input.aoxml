@@ -1,20 +1,11 @@
 <popup window="history">History of Pigtail for RK1 (Atlantean)</popup>
 
 <window id="history" title="History of Pigtail for RK1 (Atlantean)">
-	<table border>
+	<table border="true">
 		<tr><th>Date</th><th align="right">Level</th><th align="right">AI</th><th>Faction</th><th>Breed</th><th>Guild (rank)</th></tr>
-		<tr>
-			<td>2010-02-24</td><td>195</td><td><green>0</green></td>
-			<td><neutral>Neutral</neutral></td><td>Atrox</td><td>Wolf Brigade (<strong>Applicant</strong>)</td>
-		</tr>
-		<tr>
-			<td>2009-05-18</td><td>195</td><td><green>0</green></td>
-			<td><neutral>Neutral</neutral></td><td>Atrox</td><td>Wolf Brigade (<strong>Member</strong>)</td>
-		</tr>
-		<tr>
-			<td>2009-04-11</td><td>187</td><td><green>12</green></td>
-			<td><clan>Clan</clan></td><td>Solitus</td><td>Not in a guild</td>
-		</tr>
+		<tr><td>2010-02-24</td><td>195</td><td><green>0</green></td><td><neutral>Neutral</neutral></td><td>Atrox</td><td>Wolf Brigade (<strong>Applicant</strong>)</td></tr>
+		<tr><td>2009-05-18</td><td>195</td><td><green>0</green></td><td><neutral>Neutral</neutral></td><td>Atrox</td><td>Wolf Brigade (<strong>Member</strong>)</td></tr>
+		<tr><td>2009-04-11</td><td>187</td><td><green>12</green></td><td><clan>Clan</clan></td><td>Solitus</td><td>Not in a guild</td></tr>
 		<tr><td>2008-01-02</td><td colspan="5"><red>DELETED</red></td></tr>
 	</table>
 

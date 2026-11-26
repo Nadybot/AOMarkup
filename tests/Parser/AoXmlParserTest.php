@@ -305,6 +305,10 @@ final class AoXmlParserTest extends TestCase {
 		$this->assertNoWarnings();
 	}
 
+	public function testEmptyElementKeepsWhitespacePending(): void {
+		$this->assertTree("Paragraph\n  Text \"a b\"", 'a <img src="x"/> b <img src="y"/>');
+	}
+
 	public function testImages(): void {
 		$this->assertTree(
 			<<<'TREE'
@@ -583,6 +587,16 @@ final class AoXmlParserTest extends TestCase {
 			"<choice command=\"settings save x\" via=\"priv\">\n\t<option value=\"0\" selected>No</option>\n\t<option value=\"1\"><strong>Yes</strong></option>\n</choice>"
 		);
 		$this->assertNoWarnings();
+	}
+
+	public function testBlockWidgetInsideLine(): void {
+		$this->assertTree("Paragraph\n  Style strong\n    Text \"x\"", '<strong>x<slider pos="1"/></strong>');
+		$this->assertWarning('Block widget <slider> inside a line');
+	}
+
+	public function testInvalidOptionIsDropped(): void {
+		$this->assertTree('WidgetNode Choice command="x"', '<choice command="x"><option selected>No</option></choice>');
+		$this->assertWarning('<option> needs the attribute "value"');
 	}
 
 	public function testChoiceDropsOtherContent(): void {

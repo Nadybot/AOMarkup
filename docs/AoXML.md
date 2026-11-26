@@ -196,3 +196,10 @@ It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like
 - **Export:** `BbmlExporter` writes BBML for relays: named styles stay named, so the receiving
   bot applies its own theme, while placeholders are resolved, since the receiver would fill in
   its own name. `AomlExporter` writes Funcom AOML with all colours resolved.
+
+## 7. Canonical form
+`AoXmlSerializer` writes every document the same way, and parsing that gives the same tree:
+the message first, then the windows; sibling blocks separated by an empty line; one tab of
+indentation per level; list items, table rows and fields on one line each unless their content
+has line breaks; boolean attributes as `"true"`; attributes with their default value left out.
+The `input.aoxml` files of the samples are in canonical form.

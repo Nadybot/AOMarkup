@@ -57,6 +57,12 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
   then make the code follow.
 - PHP `>=8.1.17` (no readonly classes), no I/O, errors as PSR-3 warnings instead of exceptions.
 
+## To do when building the BbmlImporter
+- `legacy.bbml` must show what Nadybot really sends: add the window colour that
+  `Text::makeBlob()` puts in front (`text://<font color=#89D2E8><header>…`); the importer drops it.
+- The importer never guesses, so `legacy.bbml` does **not** give the tree of `input.aoxml`.
+  Add an `expected-import.aoxml` per sample: the literal but clean translation of `legacy.bbml`.
+
 ## Open questions
 - lepanel output is speculative until the Lost Eden devs settle their tags. Requested from them:
   `<table>` (layout vs. border), `<ul>`/`<ol>`, `<stat>` with static `value`/`unit`,

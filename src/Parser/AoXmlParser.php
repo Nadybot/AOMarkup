@@ -48,7 +48,7 @@ use AO\Markup\Node\{
 	UrlLink,
 	WaypointLink,
 };
-use AO\Markup\Widget\WidgetRegistry;
+use AO\Markup\Widget\{WidgetNode, WidgetRegistry};
 use Psr\Log\{LoggerInterface, NullLogger};
 
 /**
@@ -556,13 +556,21 @@ final class AoXmlParser implements Importer {
 				}
 				continue;
 			}
+			$saved = [$state->newlines, $state->space, $buffer, count($out)];
 			$this->emitPending($state, $top, $out, $buffer);
 			if ($buffer !== '') {
 				$out []= new Text($buffer);
 				$buffer = '';
 			}
-			array_push($out, ...$this->inlineElement($item, $state));
+			$nodes = $this->inlineElement($item, $state);
 			$this->checkAttributes($item);
+			if (count($nodes) === 0) {
+				// The element shows nothing: the whitespace before it is still pending
+				[$state->newlines, $state->space, $buffer] = $saved;
+				array_splice($out, $saved[3]);
+				continue;
+			}
+			array_push($out, ...$nodes);
 			$state->lineStart = false;
 			$state->hasContent = true;
 		}
@@ -629,6 +637,16 @@ final class AoXmlParser implements Importer {
 		}
 		if ($element->name === 'window') {
 			return $this->window($element, false);
+		}
+		if ($this->isBlock($element->name) && $this->widgets->has($element->name)) {
+			$this->warn($element->line, "Block widget <{$element->name}> inside a line, using its content only");
+			foreach (array_keys($element->attributes) as $attribute) {
+				$element->get($attribute);
+			}
+			$definition = $this->widgets->definition($element->name);
+			return $definition !== null && $definition->only !== null
+				? $this->onlyChildren($element, $definition->only)
+				: $this->content($element, $state);
 		}
 		if ($this->isBlock($element->name) && !$this->widgets->has($element->name)) {
 			$this->warn($element->line, "Block element <{$element->name}> inside a line, using its content only");
@@ -850,6 +868,10 @@ final class AoXmlParser implements Importer {
 		$node = $this->widgets->create($element->name, $attributes, $logger, ...$children);
 		if ($node === null) {
 			$this->warn($element->line, "<{$element->name}> dropped");
+			// The children of an element-only widget are inline; in a block container they need a paragraph
+			if ($block && $definition !== null && $definition->only !== null && count($children) > 0) {
+				return [new Paragraph(...$children)];
+			}
 			return $children;
 		}
 		return [$node];
@@ -870,9 +892,14 @@ final class AoXmlParser implements Importer {
 				$this->warn($element->line, "<{$element->name}> may only contain {$allowedTags}, dropping the rest");
 				continue;
 			}
-			array_push($children, ...($this->widgets->has($child->name)
+			$converted = $this->widgets->has($child->name)
 				? $this->widget($child, false, new FlowState())
-				: $this->inlineElement($child, new FlowState())));
+				: $this->inlineElement($child, new FlowState());
+			foreach ($converted as $node) {
+				if ($node instanceof WidgetNode) {
+					$children []= $node;
+				}
+			}
 		}
 		return $children;
 	}

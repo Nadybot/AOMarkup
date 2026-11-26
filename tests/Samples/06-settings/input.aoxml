@@ -14,7 +14,7 @@
 
 	<section title="Predefined Options">
 		<choice command="settings save online_show_relay">
-			<option value="0" selected>No</option>
+			<option value="0" selected="true">No</option>
 			<option value="1">Always</option>
 			<option value="2">In a separate message</option>
 		</choice>
