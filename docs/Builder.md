@@ -1,7 +1,8 @@
 # Builder API (draft)
 
 `AO\Markup\Build` (used as `B` below) builds documents in code; the builders it returns
-(`TableBuilder`, `WindowBuilder`, …) are in `AO\Markup\Builder`. Nothing here is built yet.
+(`TableBuilder`, `WindowBuilder`, …) are in `AO\Markup\Builder`. Everything here is built except `B::datetime()`, `B::date()`,
+`B::time()` and `B::duration()`, whose widgets are still to come.
 `Build::table()` reads as what it does; `B` is just a short alias.
 
 ```php
@@ -15,14 +16,18 @@ use AO\Markup\Build as B;
   builder nests (`B::dt()->add(B::dd())`), like the tree's `Field`. So wrong structures cannot be
   built: `B::dl()->add()` only takes `dt`s, `B::dt()->add()` only `dd`s.
 - **`B::xyz()` creates, `->add(…)` adds and returns `$this`.** Block containers (window, section,
-  indent, center, keep, repeat, footer, list item, table cell) take any blocks in `add()`; a
-  string becomes a paragraph. Containers with fixed children (table, row, list, field list,
+  indent, center, keep, repeat, list item, table cell) take any blocks in `add()`; each argument
+  is one block, a string (or other inline content) becomes a paragraph of its own. `<footer>`,
+  `<h1>`, `<h2>`, `<dt>`, `<dd>` and `<option>` have inline content, like in the tree. Containers with fixed children (table, row, list, field list,
   field, choice) take only those.
 - **Short forms** exist for containers with fixed children; the long form always works, too.
-- **Content** is anything: a string is text, a number is text, a node or builder is markup,
-  `null` is nothing. A short form whose value is `null` leaves out the whole field or row.
-- Builders are mutable; the tree is not. `->build()` makes the nodes; methods that take content
-  (and `reply()` in a bot) build automatically.
+- **Content** is anything: a string is text (`"\n"` is a line break), a number is text, a node or
+  builder is markup, `null` is nothing. `addField()` leaves out `null` values and the whole field
+  if none is left, `addItem()` leaves out an item without content; in `addRow()`, `null` is an
+  empty cell.
+- Builders are mutable; the tree is not. `->build()` makes the nodes; elements without content
+  (`B::hr()`, `B::br()`, `B::img()`, `B::slider()`, `B::unavailable()`, placeholders) are nodes
+  right away. Methods that take content (and `reply()` in a bot) build automatically.
 
 ## Blocks
 | Builder | Creates | Notes |
@@ -30,7 +35,8 @@ use AO\Markup\Build as B;
 | `B::window($title, id: null)` | `<window>` | `id` is generated if left out |
 | `B::section($title)` | `<section title>` | |
 | `B::h1(…)`, `B::h2(…)` | `<h1>`, `<h2>` | inline content |
-| `B::indent()`, `B::center()`, `B::keep()`, `B::repeat()`, `B::footer()` | the element | block containers |
+| `B::indent(…)`, `B::center(…)`, `B::keep(…)`, `B::repeat(…)` | the element | block containers |
+| `B::footer(…)` | `<footer>` | inline content |
 | `B::hr()`, `B::pagebreak()` | `<hr/>`, `<pagebreak/>` | |
 | `B::p(…)` | a paragraph | for inline content that should not be split; a string in `add()` is the same |
 | `B::table(border: false)` | `<table>` | `->add(B::tr())`, short: `->addRow(…)`, `->addHeaderRow(…)` |
@@ -39,7 +45,7 @@ use AO\Markup\Build as B;
 | `B::dl()` | `<dl>` | `->add(B::dt())`, short: `->addField($name, ...$values)` |
 | `B::dt(…)` | `<dt>` | the name; `->add(B::dd())` |
 | `B::dd(…, unit: null)` | `<dd>` | |
-| `B::ul()`, `B::ol(start: 1)` | `<ul>`, `<ol>` | `->add(B::li())`, short: `->addItem(…)` |
+| `B::ul()`, `B::ol(start: 1)` | `<ul>`, `<ol>` | `->add(B::li())`, short: `->addItem(…)` (one item; its inline pieces form one paragraph) |
 | `B::li(…, icon: null)` | `<li>` | block container |
 | `B::choice($command, via: Tell, inline: false)` | `<choice>` | `->add(B::option())`, short: `->addOption($value, $label, selected: false)` |
 | `B::option($value, …, selected: false)` | `<option>` | |
@@ -51,12 +57,12 @@ use AO\Markup\Build as B;
 | `B::text(…)` | a sequence of inline content |
 | `B::br()` | `<br/>` |
 | `B::strong(…)`, `B::u(…)`, `B::i(…)`, `B::match(…)`, `B::selected(…)`, `B::syntax(…)` | the style |
-| `B::green(…)`, `B::neutral(…)`, `B::header2(…)`, … | colour styles; `B::style('clan', …)` by name |
-| `B::color('#RRGGBB', …)` | `<color value>` |
+| `B::green(…)`, `B::neutral(…)`, `B::header2(…)`, … | colour styles; `B::style('clan', …)` by name (an unknown name gives the content unstyled) |
+| `B::color('#RRGGBB', …)` | `<color value>` (an invalid colour gives the content uncoloured) |
 | `B::item(low: …, high: …, ql: …, …)`, `B::nano($id, …)`, `B::skill($id, …)` | game objects; content is the link text |
 | `B::char($name, …)`, `B::waypoint(x: …, y: …, pf: …, …)` | |
 | `B::cmd($command, show: Command, via: Tell, …)`, `B::client($command, …)`, `B::url($href, …)` | links; without content the link text is generated |
-| `B::img('rdb:123')` | `<img/>` |
+| `B::img('rdb:123')` | `<img/>` (`null`, i.e. nothing, for an invalid reference) |
 | `B::myname()`, `B::myguild()`, `B::symbol()`, `B::var($name)` | placeholders |
 | `B::unavailable()`, `B::param(…)` | the widgets |
 | `B::datetime($when, $else = null)`, `B::date(…)`, `B::time(…)` | `<datetime/>`, `<date/>`, `<time/>`; `$when` is a Unix time or a `DateTimeInterface`. If it is `null` or `0`, `$else` is used instead (e.g. `'Never'`) and no element is made |
@@ -70,7 +76,10 @@ Translations (gettext, ICU plural rules) are the bot's business, not the markup'
 - `$window->link(…)` is the `<popup>` that opens the window; without content its title is the
   link text.
 - `B::document(…)` is a document: its content is the message, the windows of all `link()`s in
-  it are added automatically.
+  it are added automatically, in the order of their first link, each once. Blocks stay blocks,
+  inline pieces next to each other form one paragraph (like `B::p()`). A window without an id,
+  or with the id of an earlier window, gets the next free `window1`, `window2`, … Links inside
+  windows are not followed (popups are only allowed in the message).
 - `$window->asDocument(link: null)` is short for `B::document($window->link(…))`, the usual
   reply: a message that is only the link. Without `link`, the window title is the link text,
   like `Text::makeBlob()` does today.
