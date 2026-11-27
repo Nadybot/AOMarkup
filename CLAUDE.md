@@ -63,6 +63,10 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
 - The `expected.*` files in `tests/Samples` are the specification. Change them first,
   then make the code follow.
 - PHP `>=8.1.17` (no readonly classes), no I/O, errors as PSR-3 warnings instead of exceptions.
+- Exporters return UTF-8. The game client shows Latin-1 only; converting is the job of the
+  transport (e.g. aolib), not of the markup. Only layout cares: `TextMetric::canDisplay()` lets
+  widgets avoid characters a target cannot show (the slider uses `|` instead of `│` in AOML).
+- Text is aligned in popups only; the chat font (a different size) is not measured.
 
 ## Open questions
 - lepanel: the Lost Eden developers described their tags on 2026-11-27 (`docs/LePanel.md`).
