@@ -18,6 +18,11 @@ final class BbmlImporterTest extends TestCase {
 			"a <color value=\"#123456\">b</color> 1\n",
 			[],
 		];
+		yield 'header colours inside a line stay colour styles' => [
+			'Item: <header2>Foo<end> and <header>Bar<end>',
+			"Item: <header2>Foo</header2> and <header>Bar</header>\n",
+			[],
+		];
 		yield 'styles spanning lines' => [
 			"<highlight>a\nb<end> c",
 			"<strong>a</strong>\n<strong>b</strong> c\n",

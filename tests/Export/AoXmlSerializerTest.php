@@ -40,7 +40,7 @@ final class AoXmlSerializerTest extends TestCase {
 		yield 'breaks next to spaces' => ['a <br>b<br> c'];
 		yield 'breaks in elements' => ['<i>a<br></i><br><strong><br>b</strong>'];
 		yield 'breaks in cells' => ['<table><tr><td><br>x</td></tr></table><dl><dt>a<br></dt><dd><br></dd></dl>'];
-		yield 'styles' => ['<strong>a <i>b</i></strong> <u>c</u> <match>d</match> <selected>e</selected> <syntax>f</syntax> <green>g</green>'];
+		yield 'styles' => ['<strong>a <i>b</i></strong> <u>c</u> <match>d</match> <selected>e</selected> <syntax>f</syntax> <green>g</green> <header>h</header> <header2>i</header2>'];
 		yield 'colour' => ['<color value="#ABCDEF">x</color>'];
 		yield 'items' => ['<item id="1/2" ql="3">x</item> <item id="5" ql="1">y</item>'];
 		yield 'nano and skill' => ['<nano id="12">n</nano> <skill id="51">s</skill>'];

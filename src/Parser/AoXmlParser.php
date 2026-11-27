@@ -81,11 +81,9 @@ final class AoXmlParser implements Importer {
 		'a' => 'AoXML has no <a>, use <popup>, <cmd>, <client>, <url>, <item>, … instead',
 		'highlight' => 'use <strong>',
 		'end' => 'close the element instead, e.g. </strong>',
-		'tab' => 'use <indent>, <section>, <field> or <table>',
+		'tab' => 'use <indent>, <section>, <dl> or <table>',
 		'font' => 'use <color value="#RRGGBB">',
 		'b' => 'use <strong>',
-		'header' => 'the window title comes from <window title>',
-		'header2' => 'use <section title>',
 	];
 
 	/** @var array<string,Window> Windows by id, in document order */

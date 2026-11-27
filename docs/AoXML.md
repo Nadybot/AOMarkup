@@ -120,6 +120,7 @@ can only give hints; it never decides where a page ends.
 | `<selected>` | The currently selected choice |
 | `<syntax>` | Command syntax; the content is a bot command without prefix |
 | `<u>`, `<i>` | Underline, italic |
+| `<header>`, `<header2>` | Only the colour of the window title / of section titles (the theme's header colours). No structure: headings are `<h1>`, `<h2>` and `<section title>`, the window title is `<window title>`. |
 
 ### 3.2 Raw colours
 `<black>`, `<white>`, `<yellow>`, `<blue>`, `<green>`, `<red>`, `<orange>`, `<grey>`,
@@ -212,7 +213,7 @@ It is **not** AoXML, and it is not Funcom AOML either: AOML only knows tags like
   | leading `<tab>`s, or 4 leading spaces each | `<indent>`, nested by level; `<tab>` inside a line is a space |
   | lines, empty lines | line breaks, paragraphs; runs of spaces collapse |
   | `<highlight>` | `<strong>` |
-  | `<green>`, `<red>`, `<neutral>`, `<header2>` inside a line, … | the style of the same name |
+  | `<green>`, `<red>`, `<neutral>`, `<header>`/`<header2>` inside a line, … | the style of the same name |
   | `<font color=#…>` | `<color value="#…">` |
   | `<black>…<end>`, `<font color=#000000>` | dropped (invisible padding) |
   | `<u>`, `<i>`, `<img src=rdb://…>`, `<img src=tdb://id:…>` | `<u>`, `<i>`, `<img>` |
