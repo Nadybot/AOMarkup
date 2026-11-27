@@ -144,5 +144,19 @@ $window->add(B::section('Predefined Options')->add($choice));
 
 ## Open
 - `B::document()` with windows that are not linked from the message (allowed in the tree).
-- Whether to add `B::aoxml('…')` for a piece of AoXML inside a builder, and `format()` with
-  escaped arguments for one-liners (see `docs/Nadybot.md`).
+- **`format()` for one-liners**, to discuss. The idea: AoXML with arguments that are escaped
+  like in a prepared statement, so data never breaks the document:
+
+  ```php
+  $context->reply(B::format('No one matching <strong>%s</strong> is banned.', $search));
+  ```
+
+  Questions:
+  - Placeholder syntax: `%s` like `sprintf()`, or named (`{name}`)? `sprintf()` formats
+    (`%d`, `%.1f`) are handy, but `%` also appears in text (`73%`).
+  - Arguments: only text (escaped), or also nodes and builders (`B::item(…)`, `B::count(…)`)?
+  - Result: a document, or inline content that can go into a builder, too?
+  - Where it lives: `Build::format()` in the library, or a method of Nadybot's `Markup` service
+    (which also knows the bot's widgets)?
+  - Plural: `B::count()` as an argument, or plural rules in the format itself?
+- `B::aoxml('…')`: a piece of AoXML inside a builder (parsed with the built-in widgets).

@@ -8,8 +8,9 @@ lepanel (Lost Eden), ANSI, plain text, HTML and Discord. Its first consumer is N
 `WEBSERVER_MODULE/WebChatConverter.php`, `DISCORD/DiscordController.php`).
 Sister package: `nadybot/aolib` (namespace `AO\`, the chat client).
 
-Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
-(`docs/LePanel.md` for Lost Eden).
+Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`, `docs/Builder.md`
+(building documents in code), `docs/Nadybot.md` (how Nadybot will use the library),
+`docs/LePanel.md` (Lost Eden).
 
 ## Ground rules (decided)
 - The document tree is the contract; AoXML is only its text form. The library knows
@@ -70,6 +71,19 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
   transport (e.g. aolib), not of the markup. Only layout cares: `TextMetric::canDisplay()` lets
   widgets avoid characters a target cannot show (the slider uses `|` instead of `│` in AOML).
 - Text is aligned in popups only; the chat font (a different size) is not measured.
+
+## Status
+- Built: AoXML parser and serializer, the builder (`AO\Markup\Build`, `docs/Builder.md`), widgets
+  (slider, choice, unavailable, param, datetime/date/time, duration), placeholder resolver,
+  widget expander, paginator (also by Discord's limits), exporters for AOML, BBML, ANSI, plain
+  text, HTML and Discord, `BbmlImporter` (with optional table and list detection), font metric
+  (measured, `docs/FontCalibration.md`).
+- Not built, on purpose for now: `LePanelExporter` (waits for Lost Eden), `MarkdownImporter`;
+  both are stubs that still throw `NotImplementedException`.
+- Next: integrating the library into Nadybot (`docs/Nadybot.md`). README and the first release
+  only after that, when the interface has proven itself.
+- Open: `format()` / `B::aoxml()` (`docs/Builder.md`, "Open"); a `<cmd>` with its own link text
+  shows no command outside the game (accepted for now).
 
 ## Open questions
 - lepanel: the Lost Eden developers described their tags on 2026-11-27 (`docs/LePanel.md`).
