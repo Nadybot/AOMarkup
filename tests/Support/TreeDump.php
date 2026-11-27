@@ -8,6 +8,7 @@ use AO\Markup\Document;
 use AO\Markup\Node\{Container, Node};
 use AO\Markup\Widget\WidgetNode;
 use BackedEnum;
+use DateTimeInterface;
 use ReflectionObject;
 use ReflectionProperty;
 use UnitEnum;
@@ -122,6 +123,7 @@ final class TreeDump {
 			$result[$name] = match (true) {
 				$value instanceof BackedEnum => (string)$value->value,
 				$value instanceof UnitEnum => $value->name,
+				$value instanceof DateTimeInterface => $value->format(DateTimeInterface::ATOM),
 				$value instanceof Node => trim(self::nodes($value)),
 				is_string($value) => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
 				is_bool($value) => $value ? 'true' : 'false',

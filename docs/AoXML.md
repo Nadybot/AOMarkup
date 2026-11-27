@@ -183,7 +183,7 @@ Widgets are registered elements with a mandatory fallback to core elements, see
 | `<choice>` | `command`, `via`?, `inline`? | A choice between values. Choosing an option runs the bot command `command` followed by a space and the option's `value`; `via` works like on `<cmd>`. Contains `<option>`s only. Targets with dropdowns (web UI, Discord select menus, maybe lepanel) show one; the fallback lists the options one per line, or next to each other with `inline`. |
 | `<option>` | `value`, `selected`? | An option of a `<choice>`. The content is the label and may contain markup. `selected` marks the current value. |
 | `<datetime/>`, `<date/>`, `<time/>` | `value` | A point in time, ISO 8601 with time zone (`2026-11-20T14:02:00Z`). Shown in the bot's time zone and format (`RenderContext`); Discord (`<t:…:f>`, `:d`, `:t`) and the web UI (`<time datetime>`) show it in the reader's own time zone. |
-| `<duration/>` | `seconds` | A length of time, e.g. until a ban ends: `6 days, 3 hrs.` in the bot's format. Rendered as it is: no target updates it live. |
+| `<duration/>` | `seconds` | A length of time, e.g. until a ban ends: `6 days 3 hrs` in the bot's format. Rendered as it is: no target updates it live. |
 
 ```xml
 <choice command="settings save online_show_relay">

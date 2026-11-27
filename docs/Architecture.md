@@ -109,6 +109,7 @@ Everything bot-specific:
 | `PlaceholderProvider` | Values for `myname`, `symbol`, `myguild`, `var` |
 | `LinkResolver` | URLs for items, nanos etc. outside the game |
 | `LoggerInterface` | Warnings |
+| `TimeFormatter` | Time zone and formats for `<datetime>`, `<date>`, `<time>`, `<duration>` (`DefaultTimeFormatter`: UTC, durations like Nadybot) |
 
 ## Metrics (`AO\Markup\Metric`)
 `TextMetric::width(string): int` and `spaceWidth(): int`.

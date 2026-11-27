@@ -6,9 +6,10 @@ use function Safe\json_encode;
 
 use AO\Markup\Context\RenderContext;
 use AO\Markup\Document;
-use AO\Markup\Export\Discord\{ChoiceRenderer, DiscordRenderer, Limits, SliderRenderer};
+use AO\Markup\Export\Discord\{ChoiceRenderer, DiscordRenderer, Limits, SliderRenderer, TimestampRenderer};
 use AO\Markup\Metric\{MonospaceMetric, TextMetric};
 use AO\Markup\Transform\{Paginator, PlaceholderResolver, WidgetExpander};
+use AO\Markup\Widget\Builtin\{Date, Datetime, Time};
 use AO\Markup\Widget\Widget;
 
 /**
@@ -16,7 +17,9 @@ use AO\Markup\Widget\Widget;
  *
  * Every window is an embed. Messages beyond Discord's limits are split like a paginated
  * window (Limits); field values that are too long continue in further fields.
- * <slider> becomes a code block, <choice> a select menu; more native renderers can be
+ * <slider> becomes a code block, <choice> a select menu, <datetime>, <date> and <time>
+ * Discord timestamps in the reader's time zone (<t:…:f>, :d, :t), except where Discord
+ * does not show them (code blocks, the embed footer); more native renderers can be
  * added with addNativeRenderer().
  */
 final class DiscordExporter extends BaseExporter {
@@ -25,6 +28,9 @@ final class DiscordExporter extends BaseExporter {
 	) {
 		$this->addNativeRenderer(new SliderRenderer());
 		$this->addNativeRenderer(new ChoiceRenderer());
+		$this->addNativeRenderer(new TimestampRenderer(Datetime::class));
+		$this->addNativeRenderer(new TimestampRenderer(Date::class));
+		$this->addNativeRenderer(new TimestampRenderer(Time::class));
 	}
 
 	public function export(Document $document, RenderContext $context): string {

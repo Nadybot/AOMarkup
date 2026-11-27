@@ -82,7 +82,7 @@ final class Paginator {
 	 * @return list<Document>
 	 */
 	public function paginateWith(Document $document, RenderContext $context, Closure $size, Closure $fits): array {
-		$quiet = new RenderContext($context->placeholders, $context->theme, $context->links, new NullLogger());
+		$quiet = new RenderContext($context->placeholders, $context->theme, $context->links, new NullLogger(), $context->time);
 		if ($fits($document, $quiet)) {
 			return [$document];
 		}

@@ -6,6 +6,8 @@ use function Safe\preg_match;
 
 use AO\Markup\Node\Node;
 use BackedEnum;
+use DateTimeImmutable;
+use DateTimeInterface;
 use InvalidArgumentException;
 use Psr\Log\{LoggerInterface, NullLogger};
 use ReflectionClass;
@@ -28,6 +30,10 @@ final class WidgetRegistry {
 		$registry->register(Builtin\Param::class);
 		$registry->register(Builtin\Choice::class);
 		$registry->register(Builtin\Option::class);
+		$registry->register(Builtin\Datetime::class);
+		$registry->register(Builtin\Date::class);
+		$registry->register(Builtin\Time::class);
+		$registry->register(Builtin\Duration::class);
 		return $registry;
 	}
 
@@ -61,7 +67,8 @@ final class WidgetRegistry {
 	 *
 	 * Attribute names are the parameter names, or their kebab-case form
 	 * (markerText or marker-text). Values are converted to the parameter type
-	 * (string, int, float, bool or a backed enum). Problems are logged; if a
+	 * (string, int, float, bool, a backed enum, or DateTimeImmutable/DateTimeInterface
+	 * from ISO 8601 with time zone, see Iso8601). Problems are logged; if a
 	 * required parameter is missing or invalid, no widget is created.
 	 *
 	 * @param array<string,string|true> $attributes Values; true for boolean shorthand
@@ -133,6 +140,10 @@ final class WidgetRegistry {
 		}
 		if ($typeName === 'float') {
 			return is_numeric($value) ? [(float)$value] : null;
+		}
+		if ($typeName === DateTimeImmutable::class || $typeName === DateTimeInterface::class) {
+			$time = Iso8601::parse($value);
+			return $time === null ? null : [$time];
 		}
 		if (is_subclass_of($typeName, BackedEnum::class)) {
 			$case = $typeName::tryFrom($value);

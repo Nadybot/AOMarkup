@@ -43,8 +43,9 @@ use AO\Markup\Node\{
 	UrlLink,
 	WaypointLink,
 };
-use AO\Markup\Widget\{AsWidget, Widget, WidgetNode};
+use AO\Markup\Widget\{AsWidget, Iso8601, Widget, WidgetNode};
 use BackedEnum;
+use DateTimeInterface;
 use ReflectionClass;
 
 /**
@@ -398,6 +399,7 @@ final class AoXmlSerializer extends BaseExporter {
 				$value === null => null,
 				is_bool($value) => $value ? 'true' : 'false',
 				$value instanceof BackedEnum => (string)$value->value,
+				$value instanceof DateTimeInterface => Iso8601::format($value),
 				is_int($value), is_float($value), is_string($value) => (string)$value,
 				default => null,
 			};

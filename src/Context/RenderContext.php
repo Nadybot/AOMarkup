@@ -11,6 +11,7 @@ final class RenderContext {
 		public readonly Theme $theme=new DefaultTheme(),
 		public readonly LinkResolver $links=new TemplateLinkResolver(),
 		public readonly LoggerInterface $logger=new NullLogger(),
+		public readonly TimeFormatter $time=new DefaultTimeFormatter(),
 	) {
 	}
 }

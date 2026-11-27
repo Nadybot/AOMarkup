@@ -10,10 +10,13 @@ use AO\Markup\Export\AoXmlSerializer;
 use AO\Markup\Node\{Fragment, Paragraph, Text};
 use AO\Markup\Parser\AoXmlParser;
 use AO\Markup\Tests\Support\TreeDump;
-use AO\Markup\Widget\WidgetRegistry;
+use AO\Markup\Widget\Builtin\Datetime;
+use AO\Markup\Widget\{WidgetNode, WidgetRegistry};
 use Beste\Psr\Log\TestLogger;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Safe\DateTimeImmutable;
 
 final class AoXmlSerializerTest extends TestCase {
 	/** @return iterable<string,array{string}> */
@@ -59,6 +62,8 @@ final class AoXmlSerializerTest extends TestCase {
 		yield 'windows' => ['See <popup window="a"><strong>2</strong> bans</popup>.<window id="a" title="A">x<footer>Data by\nAuno</footer></window>'];
 		yield 'empty window' => ['<window id="a" title="A"></window>'];
 		yield 'widgets' => ['<slider pos="73.5" min="10" left="L"/> x <unavailable/> <syntax>a <param>b</param></syntax>'];
+		yield 'times' => ['Until <datetime value="2026-11-26T17:02:00Z"/> <date value="2026-11-26T18:02:00+01:00"/> <time value="2026-11-26T12:02:00-05:30"/>, in <duration seconds="529200"/>'];
+		yield 'zero and negative duration' => ['<duration seconds="0"/> <duration seconds="-60"/>'];
 		yield 'choice' => ['<choice command="settings save x" via="priv" inline><option value="0" selected>No</option><option value="1"><strong>Yes</strong></option></choice>'];
 	}
 
@@ -104,6 +109,19 @@ final class AoXmlSerializerTest extends TestCase {
 				. '<popup window="a">Open</popup>'
 			))
 		);
+	}
+
+	public function testCanonicalTimes(): void {
+		$this->assertSame(
+			"<datetime value=\"2026-11-26T17:02:00Z\"/> <date value=\"2026-11-26T17:02:00Z\"/> <time value=\"2026-11-26T18:02:00+01:00\"/>\n",
+			self::serialize(self::parse(
+				'<datetime value="2026-11-26T17:02Z"/> <date value="2026-11-26T17:02:00+00:00"/> <time value="2026-11-26T18:02:00+0100"/>'
+			))
+		);
+		$built = new Document(new Fragment(new Paragraph(
+			new WidgetNode(new Datetime(new DateTimeImmutable('2026-07-01 12:00:00', new DateTimeZone('Europe/Berlin')))),
+		)));
+		$this->assertSame("<datetime value=\"2026-07-01T12:00:00+02:00\"/>\n", self::serialize($built));
 	}
 
 	public function testBuiltTree(): void {

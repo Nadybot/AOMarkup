@@ -617,6 +617,45 @@ final class AoXmlParserTest extends TestCase {
 		);
 	}
 
+	public function testTimeWidgets(): void {
+		$this->assertTree(
+			<<<'TREE'
+				Paragraph
+				  Text "Banned until "
+				  WidgetNode Datetime value=2026-11-26T17:02:00+00:00
+				  Text " ("
+				  WidgetNode Date value=2026-11-26T18:02:00+01:00
+				  Text " "
+				  WidgetNode Time value=2026-11-26T12:02:00-05:00
+				  Text "), that is in "
+				  WidgetNode Duration seconds=529200
+				  Text "."
+				TREE,
+			'Banned until <datetime value="2026-11-26T17:02:00Z"/> (<date value="2026-11-26T18:02:00+01:00"/>'
+			. ' <time value="2026-11-26T12:02-0500"/>), that is in <duration seconds="529200"/>.'
+		);
+		$this->assertNoWarnings();
+	}
+
+	/** @return iterable<string,array{string,string}> */
+	public static function provideInvalidTimes(): iterable {
+		yield 'no time zone' => ['<datetime value="2026-11-26T17:02:00"/>', '"2026-11-26T17:02:00"'];
+		yield 'date only' => ['<date value="2026-11-26"/>', '"2026-11-26"'];
+		yield 'invalid date' => ['<date value="2026-02-30T00:00:00Z"/>', '"2026-02-30T00:00:00Z"'];
+		yield 'invalid time' => ['<time value="2026-11-26T25:00:00Z"/>', '"2026-11-26T25:00:00Z"'];
+		yield 'time zone name' => ['<time value="2026-11-26T17:02:00 Europe/Berlin"/>', '"2026-11-26T17:02:00 Europe/Berlin"'];
+		yield 'no value' => ['<datetime value/>', '(no value)'];
+		yield 'duration with unit' => ['<duration seconds="5m"/>', '"5m"'];
+		yield 'fractional duration' => ['<duration seconds="1.5"/>', '"1.5"'];
+	}
+
+	#[DataProvider('provideInvalidTimes')]
+	public function testInvalidTimeIsDropped(string $input, string $shown): void {
+		$this->assertTree('', $input);
+		$this->assertWarning("invalid value {$shown} for attribute");
+		$this->assertWarning('dropped');
+	}
+
 	// ------------------------------------------------------------------
 
 	private function parse(string $input): Document {

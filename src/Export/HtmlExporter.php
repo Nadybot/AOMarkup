@@ -4,21 +4,27 @@ namespace AO\Markup\Export;
 
 use AO\Markup\Context\RenderContext;
 use AO\Markup\Document;
-use AO\Markup\Export\Html\{ChoiceRenderer, HtmlRenderer, SliderRenderer};
+use AO\Markup\Export\Html\{ChoiceRenderer, DurationRenderer, HtmlRenderer, SliderRenderer, TimeRenderer};
 use AO\Markup\Metric\{MonospaceMetric, TextMetric};
 use AO\Markup\Transform\{PlaceholderResolver, WidgetExpander};
+use AO\Markup\Widget\Builtin\{Date, Datetime, Time};
 use AO\Markup\Widget\Widget;
 
 /**
  * Semantic HTML with aom-* CSS classes
  *
- * <slider> and <choice> are rendered natively (<meter>, <select>); more native
- * renderers can be added with addNativeRenderer().
+ * <slider>, <choice>, <datetime>, <date>, <time> and <duration> are rendered natively
+ * (<meter>, <select>, <time datetime>, <span data-seconds>); more native renderers can
+ * be added with addNativeRenderer().
  */
 final class HtmlExporter extends BaseExporter {
 	public function __construct() {
 		$this->addNativeRenderer(new SliderRenderer());
 		$this->addNativeRenderer(new ChoiceRenderer());
+		$this->addNativeRenderer(new TimeRenderer(Datetime::class));
+		$this->addNativeRenderer(new TimeRenderer(Date::class));
+		$this->addNativeRenderer(new TimeRenderer(Time::class));
+		$this->addNativeRenderer(new DurationRenderer());
 	}
 
 	public function export(Document $document, RenderContext $context): string {

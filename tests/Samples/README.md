@@ -35,6 +35,8 @@ then make the code follow.
 - Placeholders: `myname` = `Nadybot`, `symbol` = `!`, `myguild` = `Troet`
 - Theme: `AO\Markup\Context\DefaultTheme` (Nadybot's default colours)
 - Links: `TemplateLinkResolver` defaults (`https://auno.org/ao/db.php?id={id}&ql={ql}`)
+- Times: `DefaultTimeFormatter` defaults (UTC, `Y-m-d H:i`, `Y-m-d`, `H:i`, durations like
+  Nadybot's `Util::unixtimeToReadable($seconds, false)`)
 - Pagination: AOML and BBML are split into pages of at most 7 500 bytes (Nadybot's default
   `max_blob_size`); in the expected files, the pages are separated by a line
   `----- next message -----`. Discord is split by its own limits (see below), the other targets are not paginated.
@@ -69,6 +71,10 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Blocks are separated by an empty line, except an `<indent>` directly after a paragraph: it
   continues the paragraph and follows it on the next line (`If you are lazy, just use` in 05).
 - Blocks inside a list item or a table cell are not separated by empty lines.
+- `<datetime/>`, `<date/>`, `<time/>`, `<duration/>`: the widget fallback (plain text formatted by
+  the `RenderContext`'s `TimeFormatter`, e.g. `2026-11-26 17:02`, `2026-11-26`, `17:02`,
+  `6 days 3 hrs`) in AOML, BBML, ANSI and plain text, and wherever a target has no native form
+  for them (see HTML and Discord).
 
 ### AOML (official client)
 - Popup: `<a href="text://…">label</a>`, starting with the window colour and the title in
@@ -145,6 +151,12 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
   `via="priv|org"` adds `data-via` to commands and choices.
 - `<color>` is the only inline colour: `<span class="aom-color" style="color:#…">`.
 - `<h1>`/`<h2>` become `<h3>`/`<h4>` (the window title is `<h1>`, sections are `<h2>`).
+- `<datetime/>`: native renderer, `<time class="aom-datetime" datetime="2026-11-26T17:02:00Z">`
+  with the formatted text (`TimeFormatter`); `<date/>` and `<time/>` the same with `aom-date` and
+  `aom-time`. The `datetime` attribute is always in UTC with `Z`, so the web UI can show it in the
+  reader's time zone.
+- `<duration/>`: native renderer, `<span class="aom-duration" data-seconds="529200">` with the
+  formatted text.
 
 ### Discord
 - A window becomes an embed. Sections become embed fields if the window consists only of an
@@ -173,4 +185,7 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - `<choice>`: the options are listed in the description (label in bold, `(current)` for the
   selected one), and a select menu is added as a message component: `custom_id` is
   `aom-choice:` + command, the selected option is the `default`.
+- `<datetime/>`, `<date/>`, `<time/>`: Discord timestamps `<t:UNIX:f>`, `<t:UNIX:d>`, `<t:UNIX:t>`,
+  which Discord shows in the reader's time zone and locale. Where Discord does not render them
+  (code blocks, the embed footer), the widget fallback is used. `<duration/>` uses its fallback.
 

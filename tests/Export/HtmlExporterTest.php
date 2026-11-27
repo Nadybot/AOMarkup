@@ -47,6 +47,14 @@ final class HtmlExporterTest extends TestCase {
 			. "<option value=\"1\">A &amp; B</option>\n</select>\n"
 			. "<div class=\"aom-slider\"><meter min=\"-10\" max=\"10.5\" value=\"5\"></meter></div>\n</div>",
 		];
+		yield 'time widgets' => [
+			'Until <datetime value="2026-11-26T18:02:00+01:00"/> (<date value="2026-11-26T17:02:00Z"/>,'
+			. ' <time value="2026-11-26T17:02:00Z"/>), in <duration seconds="529200"/>.',
+			'<div class="aom-message">Until <time class="aom-datetime" datetime="2026-11-26T17:02:00Z">2026-11-26 17:02</time>'
+			. ' (<time class="aom-date" datetime="2026-11-26T17:02:00Z">2026-11-26</time>,'
+			. ' <time class="aom-time" datetime="2026-11-26T17:02:00Z">17:02</time>),'
+			. ' in <span class="aom-duration" data-seconds="529200">6 days 3 hrs</span>.</div>',
+		];
 	}
 
 	#[DataProvider('provideCases')]

@@ -2,12 +2,13 @@
 
 namespace AO\Markup\Tests\Export;
 
-use AO\Markup\Context\{ArrayPlaceholderProvider, RenderContext};
+use AO\Markup\Context\{ArrayPlaceholderProvider, DefaultTimeFormatter, RenderContext};
 use AO\Markup\Export\{AnsiExporter, Exporter, PlainExporter};
 use AO\Markup\Parser\AoXmlParser;
 use AO\Markup\Tests\Support\AnsiNotation;
 use AO\Markup\Widget\WidgetRegistry;
 use Beste\Psr\Log\TestLogger;
+use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -83,6 +84,25 @@ final class PlainExporterTest extends TestCase {
 
 	public function testBulletIsConfigurable(): void {
 		$this->assertSame("- a\n", self::export(new PlainExporter(bullet: '-'), '<ul><li>a</li></ul>'));
+	}
+
+	public function testTimeWidgetsUseTheFallback(): void {
+		$input = 'Until <datetime value="2026-11-26T18:02:00+01:00"/> (<date value="2026-11-26T17:02:00Z"/>,'
+			. ' <time value="2026-11-26T17:02:00Z"/>), in <duration seconds="529200"/>.';
+		$this->assertSame("Until 2026-11-26 17:02 (2026-11-26, 17:02), in 6 days 3 hrs.\n", self::export(new PlainExporter(), $input));
+
+		$logger = TestLogger::create();
+		$document = (new AoXmlParser(WidgetRegistry::withBuiltins(), $logger))->parse($input);
+		$context = new RenderContext(
+			new ArrayPlaceholderProvider([]),
+			logger: $logger,
+			time: new DefaultTimeFormatter(new DateTimeZone('America/New_York'), 'm/d/Y h:i A', 'm/d/Y', 'h:i A'),
+		);
+		$this->assertSame(
+			"Until 11/26/2026 12:02 PM (11/26/2026, 12:02 PM), in 6 days 3 hrs.\n",
+			(new PlainExporter())->export($document, $context)
+		);
+		$this->assertSame([], $logger->records->all());
 	}
 
 	public function testMissingPlaceholdersAreLogged(): void {

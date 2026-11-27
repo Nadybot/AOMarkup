@@ -85,6 +85,36 @@ final class DiscordExporterTest extends TestCase {
 		$this->assertSame(['abc', 'de'], Markdown::chunks('abcde', 3));
 	}
 
+	public function testTimeWidgets(): void {
+		$this->assertSame(
+			[
+				'content' => 'Until <t:1795712520:f> (<t:1795712520:d>, <t:1795712520:t>), in **6 days 3 hrs**.',
+			],
+			self::export(
+				'Until <datetime value="2026-11-26T18:02:00+01:00"/> (<date value="2026-11-26T17:02:00Z"/>,'
+				. ' <time value="2026-11-26T17:02:00Z"/>), in <strong><duration seconds="529200"/></strong>.'
+			)
+		);
+	}
+
+	public function testTimesWhereDiscordCannotShowTimestamps(): void {
+		$this->assertSame(
+			[
+				'content' => '',
+				'embeds' => [[
+					'title' => 'T',
+					'description' => "```\nA                │ B\n─────────────────┼─────\n2026-11-26 17:02 │ 1 hr\n```",
+					'footer' => ['text' => 'As of 2026-11-26 17:02'],
+				]],
+			],
+			self::export(
+				'<popup window="w">T</popup><window id="w" title="T">'
+				. '<table border><tr><th>A</th><th>B</th></tr><tr><td><datetime value="2026-11-26T17:02:00Z"/></td><td><duration seconds="3600"/></td></tr></table>'
+				. '<footer>As of <datetime value="2026-11-26T17:02:00Z"/></footer></window>'
+			)
+		);
+	}
+
 	/** @return array<mixed> */
 	private static function export(string $input): array {
 		$logger = TestLogger::create();
