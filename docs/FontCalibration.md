@@ -12,26 +12,38 @@ describes how to measure the real widths in the game.
 
 ## Generating the test popups
 ```
-bin/font-calibration [repeat]
+bin/font-calibration [--repeat=20] [--per-page=40]
 ```
-prints seven AOML popup links (one per line), made with `AomlExporter`. Every line in a
-popup is `|` + one character repeated 20 times + `|`, followed by its code point:
+prints one AOML popup link per page, made with `AomlExporter`. Every line in a popup is `|` +
+one character repeated 20 times + `|`, followed by its code point:
 
 ```
 |AAAAAAAAAAAAAAAAAAAA|   U+0041
 ```
 
-The last page compares kerning pairs with the same letters unpaired:
+The kerning pages compare pairs with the same letters unpaired:
 
 ```
 |AVAVAVAVAVAVAVAVAVAV|   AV paired
 |AAAAAAAAAAVVVVVVVVVV|   AV unpaired
 ```
 
+The last page has a reference line, and the last message is the same line as plain chat text.
+
 ## In the game
-1. Send the links to yourself (e.g. through the bot), open each popup and make a
-   screenshot at 100 % UI scale, without resizing the window.
-2. Also send one calibration line as plain chat text, to compare chat and popups.
+The easiest way to get the popups into the game are client scripts:
+
+```
+bin/font-calibration --script=DIR --tell=YourCharacter
+```
+
+writes `DIR/aomcal1`, `DIR/aomcal2`, … (16 characters per page, one line each, `/tell` to
+yourself, in the client's code page; characters it cannot encode become `&#…;`).
+
+1. Copy the files into the `scripts` folder of the client.
+2. Run `/aomcal1`, `/aomcal2`, … in the game; each sends one popup to yourself.
+3. Open each popup and make a screenshot (PNG, 100 % UI scale, don't resize the window).
+   The last script sends the reference line as plain text: screenshot it in the chat, too.
 
 ## Evaluating
 For every line: `width = (x of the right bar − x of the left bar − width of "|") / 20`.

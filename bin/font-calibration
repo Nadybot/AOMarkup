@@ -1,13 +1,18 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-// Print AOML popups to measure the font of the AO client, see docs/FontCalibration.md
+// Make AOML popups to measure the font of the AO client, see docs/FontCalibration.md
 //
-//   bin/font-calibration [repeat]
+//   bin/font-calibration [--repeat=20] [--per-page=40]
+//       prints one popup link per page
+//   bin/font-calibration --script=DIR --tell=NAME [--repeat=20] [--per-page=16]
+//       writes AO client scripts DIR/aomcal1 … that /tell the pages to NAME:
+//       copy them into the scripts folder of the client and run /aomcal1, /aomcal2, …
 //
-// Every line is "|" + a character repeated [repeat] times (default 20) + "|":
-// the distance between the bars, minus one bar, divided by [repeat] is the
-// width of the character. Kerning pages compare pairs with their unpaired form.
+// Every line is "|" + a character repeated [repeat] times + "|": the distance
+// between the bars, minus one bar, divided by [repeat] is the width of the
+// character. The last pages compare kerning pairs with their unpaired form, and
+// show one line in a popup and as plain chat text, to compare both.
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -17,7 +22,15 @@ use AO\Markup\Export\AomlExporter;
 use AO\Markup\Node\{Fragment, LineBreak, Node, Paragraph, PopupLink, Text};
 use AO\Markup\Window;
 
-$repeat = max(1, (int)($argv[1] ?? 20));
+$options = getopt('', ['repeat:', 'per-page:', 'script:', 'tell:']);
+$script = is_string($options['script'] ?? null) ? $options['script'] : null;
+$tell = is_string($options['tell'] ?? null) ? $options['tell'] : null;
+if (isset($script) && !isset($tell)) {
+	fwrite(STDERR, "--script needs --tell=NAME (the character that gets the popups)\n");
+	exit(1);
+}
+$repeat = max(1, (int)($options['repeat'] ?? 20));
+$perPage = max(1, (int)($options['per-page'] ?? (isset($script) ? 16 : 40)));
 
 // Printable ASCII and Latin-1, plus characters our exporters use
 $chars = [];
@@ -28,10 +41,11 @@ foreach ([[0x20, 0x7E], [0xA0, 0xFF]] as [$from, $to]) {
 }
 array_push($chars, '│', '•', '€', '„', '“', '”', '‘', '’', '–', '—', '…');
 
+/** @return list<Node> */
 $line = static fn (string $content, string $note): array => [new Text("|{$content}|   {$note}"), new LineBreak()];
 
 $pages = [];
-foreach (array_chunk($chars, 40) as $chunk) {
+foreach (array_chunk($chars, $perPage) as $chunk) {
 	$lines = [];
 	foreach ($chunk as $char) {
 		$code = sprintf('U+%04X', mb_ord($char, 'UTF-8'));
@@ -41,15 +55,22 @@ foreach (array_chunk($chars, 40) as $chunk) {
 }
 
 // Kerning: with kerning, a line of pairs is shorter than the same letters unpaired
+$half = intdiv($repeat, 2);
 $kerning = [];
 foreach (['AV', 'To', 'Te', 'Yo', 'LT', 'P,', 'y.', '11', 'Av', 'r.'] as $pair) {
-	$half = intdiv($repeat, 2);
 	array_push($kerning, ...$line(str_repeat($pair, $half), "{$pair} paired"));
 	array_push($kerning, ...$line(str_repeat($pair[0], $half) . str_repeat(mb_substr($pair, 1), $half), "{$pair} unpaired"));
 }
-$pages []= $kerning;
+foreach (array_chunk($kerning, $perPage * 2) as $chunk) {
+	$pages []= $chunk;
+}
+
+// The same line in a popup and as chat text: is the popup font the same size?
+$reference = '|' . str_repeat('x', $repeat) . '|   reference';
+$pages []= [new Text($reference), new LineBreak()];
 
 $context = new RenderContext(new ArrayPlaceholderProvider([]));
+$messages = [];
 foreach ($pages as $i => $lines) {
 	$id = 'page' . ($i + 1);
 	$title = 'Font calibration ' . ($i + 1) . '/' . count($pages);
@@ -58,5 +79,29 @@ foreach ($pages as $i => $lines) {
 		new Fragment(new Paragraph(new PopupLink($id, new Text($title)))),
 		[$id => new Window($id, $title, new Paragraph(...$lines))]
 	);
-	echo (new AomlExporter())->export($document, $context), "\n";
+	$messages []= (new AomlExporter())->export($document, $context);
+}
+$messages []= htmlspecialchars($reference, ENT_NOQUOTES);
+
+if (!isset($script)) {
+	echo implode("\n", $messages), "\n";
+	exit(0);
+}
+
+// Client scripts: one line each, in the client's code page, characters it cannot
+// encode as numeric entities
+if (!is_dir($script) && !mkdir($script, 0777, true)) {
+	fwrite(STDERR, "Cannot create {$script}\n");
+	exit(1);
+}
+foreach ($messages as $i => $message) {
+	$oneLine = str_replace("\n", '<br>', $message);
+	$encoded = '';
+	foreach (mb_str_split($oneLine, 1, 'UTF-8') as $char) {
+		$cp1252 = @iconv('UTF-8', 'CP1252', $char);
+		$encoded .= $cp1252 === false || $cp1252 === '' ? '&#' . mb_ord($char, 'UTF-8') . ';' : $cp1252;
+	}
+	$file = sprintf('%s/aomcal%d', rtrim($script, '/'), $i + 1);
+	file_put_contents($file, "/tell {$tell} {$encoded}\r\n");
+	printf("%s: %d bytes\n", $file, strlen($encoded));
 }
