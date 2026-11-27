@@ -17,8 +17,8 @@ message goes (so Discord gets AO pages, too)
 
 The numbers: `->reply()` 1615 times in 160 files, `makeBlob` 452 times in 137 files,
 `makeChatcmd` 495 times, `<highlight>` 2163 times, `<tab>` 1201 times. Five places convert BBML
-with regexes (`CLAUDE.md`). User input is put into BBML without escaping, e.g. in `!banlist`:
-`"<tab>Reason: <highlight>{$ban->reason}<end>\n"`: a reason with `<a href=…>` is a link.
+with regexes (`CLAUDE.md`). (User input is HTML-escaped by the game client, so markup in it is
+not a real risk; escaping in AoXML is about correct documents, e.g. a `<` in item names.)
 
 ## Idea: a Document travels, a string is only made at the end
 ```
@@ -62,8 +62,8 @@ their own widgets to.
 Three ways, they can be mixed.
 
 ### 1. AoXML with escaped arguments
-Closest to today's strings; arguments are escaped like in a prepared statement, so user input
-can never become markup:
+Closest to today's strings; arguments are escaped like in a prepared statement, so text from
+the database or other bots never breaks the document:
 
 ```php
 $context->reply($this->markup->format(
@@ -123,12 +123,13 @@ Inline content: strings are text, nodes are markup, e.g.
    the API above, module by module, starting with the ones that have tables.
 3. Relays: AoXML between bots that both have AOMarkup (lossless), BBML/AOML for the others.
 
+## Decided
+- `string|Document` in the existing signatures; it is a transition, BBML strings go away.
+- The web UI gets a converter to its `AOMsg` format (a `NadyUiExporter`); NadyUI may render
+  AoXML itself later.
+- Modules no longer decide page breaks: only `<pagebreak/>` hints; `makeBlob()`'s
+  `$permanentHeader` becomes `<repeat>` or the header row of a table.
+
 ## Questions
 1. **Writing documents:** builder, AoXML with `format()`, or both? (Proposal: both; `format()`
    for one-liners, the builder for windows.)
-2. **Types:** `string|Document` in the existing signatures (`reply()`, `sendTell()`, …), or a
-   Nadybot class that wraps both?
-3. **Web UI:** today the WebChatConverter sends its own XML (`AOMsg`) to NadyUI. Should the web
-   UI get HTML (`HtmlExporter`), the tree as JSON, or AoXML that NadyUI renders itself?
-4. **Pages:** Is it fine that modules no longer decide page breaks (only `<pagebreak/>` hints),
-   and that `makeBlob()`'s `$permanentHeader` becomes `<repeat>` or the header row of a table?
