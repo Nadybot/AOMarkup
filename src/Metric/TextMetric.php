@@ -4,6 +4,9 @@ namespace AO\Markup\Metric;
 
 /** Measures text in the unit of a target (pixels, terminal cells, …) */
 interface TextMetric {
+	/** Can the target show this character at all? */
+	public function canDisplay(string $char): bool;
+
 	/** Width of the given plain text */
 	public function width(string $text): int;
 

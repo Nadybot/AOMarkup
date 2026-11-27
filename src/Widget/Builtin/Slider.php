@@ -14,7 +14,8 @@ use AO\Markup\Widget\{AsWidget, ExpansionContext, Widget};
  *                       <marker>
  *
  * The bar uses the narrower of `l` and `|` in the target's metric (`l` in the
- * AO font, where it is 4 px instead of 6), and `|` if both are equally wide.
+ * AO font, where it is 4 px instead of 6), and `|` if both are equally wide. The
+ * marker is `│` where the target can show it, else `|`.
  */
 #[AsWidget('slider', block: true)]
 final class Slider implements Widget {
@@ -23,6 +24,9 @@ final class Slider implements Widget {
 
 	/** Candidates for the bar character, preferred first */
 	private const BAR_CHARS = ['|', 'l'];
+
+	/** The marker, if the target can show it, else "|" (the AO client shows Latin-1 only) */
+	private const MARKER = '│';
 
 	public function __construct(
 		public readonly float $pos,
@@ -51,7 +55,8 @@ final class Slider implements Widget {
 		if ($leftBar !== '') {
 			$bar []= new Style(StyleName::Green, new Text($leftBar));
 		}
-		$bar []= new Style(StyleName::Red, new Text('│'));
+		$markerChar = $ctx->metric->canDisplay(self::MARKER) ? self::MARKER : '|';
+		$bar []= new Style(StyleName::Red, new Text($markerChar));
 		if ($rightBar !== '') {
 			$bar []= new Style(StyleName::Green, new Text($rightBar));
 		}
@@ -64,7 +69,7 @@ final class Slider implements Widget {
 
 		// Center the marker text below the marker
 		$metric = $ctx->metric;
-		$markerX = $metric->width($prefix . $leftBar) + intdiv($metric->width('│'), 2);
+		$markerX = $metric->width($prefix . $leftBar) + intdiv($metric->width($markerChar), 2);
 		$textX = max(0, $markerX - intdiv($metric->width($this->marker), 2));
 		$spaces = $metric->spacesBetween(0, $textX);
 

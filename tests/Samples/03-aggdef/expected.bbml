@@ -12,7 +12,7 @@ You must set your AGG bar at <highlight>73% (6)<end> to wield your weapon at <hi
 <tab>Neutral (87.5%): <black>0<end><highlight>210<end> inits
 <tab>Full Def (0%):     <highlight>1170<end> inits
 
-1170 DEF <green>llllllllllllllllllllllllllllllllllll<end><red>│<end><green>lllllllllllll<end> AGG 135
+1170 DEF <green>llllllllllllllllllllllllllllllllllll<end><red>|<end><green>lllllllllllll<end> AGG 135
                                      You: 300
 
 Note that at the neutral position (87.5%), your attack and recharge time will match that of the weapon you are using.

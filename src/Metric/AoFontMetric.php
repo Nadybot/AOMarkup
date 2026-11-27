@@ -5,10 +5,12 @@ namespace AO\Markup\Metric;
 use Psr\Log\{LoggerInterface, NullLogger};
 
 /**
- * Pixel widths of the default font of the Anarchy Online client
+ * Pixel widths of the font of Anarchy Online's popup windows
  *
- * Measured by hand; taken from Nadybot's AI_MODULE/Botml/TableRenderer.
- * Bold or header fonts are not taken into account.
+ * Measured by hand first (from Nadybot's AI_MODULE/Botml/TableRenderer), then confirmed
+ * and completed with screenshots of the client (docs/FontCalibration.md, 2026-11-27):
+ * every character has a whole number of pixels, and there is no kerning. The client
+ * shows Latin-1 only; other characters become "¿". The chat uses a different size.
  */
 final class AoFontMetric implements TextMetric {
 	/** Width used for characters we have no measurement for */
@@ -39,18 +41,35 @@ final class AoFontMetric implements TextMetric {
 		"'" => 3,
 		'!' => 5, '.' => 5, ',' => 5,
 		'(' => 6, ')' => 6, '-' => 6, '[' => 6, ']' => 6, '\\' => 6, '|' => 6, ':' => 6, '"' => 6, ';' => 6,
-		'/' => 6, '„' => 6, '“' => 6,
+		'/' => 6,
 		'?' => 7, '°' => 7, '¹' => 7, '²' => 7, '³' => 7,
 		'$' => 8, '*' => 8, '{' => 8, '}' => 8, '`' => 8, '«' => 8, '»' => 8, '€' => 8, '£' => 8,
 		'&' => 9,
 		'#' => 11, '^' => 11, '+' => 11, '=' => 11, '<' => 11, '>' => 11, '~' => 11, '≈' => 11,
 		'@' => 13, '½' => 13, '¼' => 13, '⅓' => 13, '¾' => 13,
 		'%' => 14,
+
+		// Latin-1, measured in the client on 2026-11-27
+		"\u{00A0}" => 5, '¡' => 5, '·' => 5, 'Ì' => 5, 'Í' => 5, 'Î' => 5, 'Ï' => 5,
+		'¦' => 6, "\u{00AD}" => 6,
+		'ª' => 7, 'º' => 7, '¿' => 7,
+		'¢' => 8, '¤' => 8, '¥' => 8, '§' => 8, '¨' => 8, '¯' => 8, '´' => 8, 'µ' => 8, '¶' => 8, '¸' => 8,
+		'Ë' => 8, 'Ý' => 8, 'Þ' => 8, 'ã' => 8, 'ð' => 8, 'ò' => 8, 'ó' => 8, 'ô' => 8, 'õ' => 8, 'ø' => 8, 'ù' => 8, 'ú' => 8, 'û' => 8, 'ý' => 8, 'þ' => 8, 'ÿ' => 8,
+		'Ã' => 9, 'Ç' => 9,
+		'Ð' => 10, 'Õ' => 10, 'Ø' => 10,
+		'¬' => 11, '±' => 11, '×' => 11, '÷' => 11,
+		'æ' => 12,
+		'©' => 13, '®' => 13, 'Æ' => 13,
 	];
 
 	public function __construct(
 		private LoggerInterface $logger=new NullLogger(),
 	) {
+	}
+
+	/** Only the characters we measured; the client shows Latin-1 only */
+	public function canDisplay(string $char): bool {
+		return isset(self::WIDTHS[$char]);
 	}
 
 	public function width(string $text): int {

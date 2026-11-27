@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Measure the bar distances in screenshots of bin/font-calibration popups
+
+Needs Pillow. Prints, per screenshot, the distance in pixels between the first and the last
+bar of every line: (distance - 6) / repeat is the width of the character (| is 6 px).
+See docs/FontCalibration.md.
+"""
+import sys
+from PIL import Image
+
+def ink(p):
+    r, g, b = p[:3]
+    return b > 150 and b > r + 30
+
+def margin(im):
+    """The column of the left bars: the one with the most runs of 11+ inked pixels"""
+    W, H = im.size
+    best, bestx = 0, 0
+    for x in range(min(W, 40)):
+        runs, run = 0, 0
+        for y in range(H):
+            if ink(im.getpixel((x, y))):
+                run += 1
+            else:
+                runs += run >= 11
+                run = 0
+        if runs > best:
+            best, bestx = runs, x
+    return bestx
+
+def bands(im):
+    """Text lines: start rows where the bar at the left margin begins"""
+    W, H = im.size
+    x0 = margin(im)
+    col = [ink(im.getpixel((x0, y))) for y in range(H)]
+    starts, y = [], 0
+    while y < H:
+        if col[y] and (y == 0 or not col[y - 1]):
+            run = 0
+            while y + run < H and col[y + run]:
+                run += 1
+            if run >= 11:
+                starts.append((y, run))
+            y += run
+        else:
+            y += 1
+    return starts
+
+def measure_line(im, y0, h):
+    W, _ = im.size
+    counts = [sum(ink(im.getpixel((x, y))) for y in range(y0, y0 + h)) for x in range(W)]
+    tall = [x for x in range(W) if counts[x] >= h - 1]
+    inked = [x for x in range(W) if counts[x] > 0]
+    # the label starts after the last gap of >= 8 empty columns
+    gaps = []
+    for a, b in zip(inked, inked[1:]):
+        if b - a > 8:
+            gaps.append((a, b))
+    if not gaps:
+        return None
+    label_gap = gaps[-1]
+    right = max(x for x in tall if x <= label_gap[0])
+    left = tall[0]
+    return left, right
+
+def page(path):
+    im = Image.open(path).convert('RGB')
+    return [measure_line(im, y, h) for y, h in bands(im)]
+
+if __name__ == '__main__':
+    for path in sys.argv[1:]:
+        lines = page(path)
+        print(path, len(lines), [None if l is None else l[1] - l[0] for l in lines])

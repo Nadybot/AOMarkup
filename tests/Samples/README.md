@@ -87,7 +87,8 @@ Raw escape codes are unreadable in diffs, so `expected.ansi` uses a notation tha
 - Lists: `- ` and `1. ` prefixes (the bullet is configurable, `-` is the default).
 - `<match>`: red brackets around the content, `<selected>`: yellow brackets.
 - `<syntax>`: highlighted, with the command prefix.
-- `<slider>`: the widget fallback (`l` bars, red `│` marker, marker text centred below it).
+- `<slider>`: the widget fallback (`l` bars, red `|` marker, marker text centred below it). The client
+  shows Latin-1 only, so there is no `│`; targets that can show it (ANSI, plain text) use `│`.
 - Links: `itemref://low/high/ql`, `itemid://53019/id` (nano), `skillid://id`, `user://name`,
   `chatcmd:///tell Bot !cmd` (`/g Bot` for `via="priv"`, `/o` for `via="org"`), `chatcmd://` +
   client command, `chatcmd:///waypoint x y pf`, `chatcmd:///start URL`. `'` in links becomes `&#39;`.

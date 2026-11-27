@@ -32,7 +32,7 @@ final class WidgetTest extends TestCase {
 		$ctx = new ExpansionContext(new RenderContext(new ArrayPlaceholderProvider([])), new AoFontMetric());
 		$slider = new Slider(pos: 73, left: '1170 DEF', right: 'AGG 135', marker: 'You: 300');
 		$this->assertSame(
-			'1170 DEF ' . str_repeat('l', 36) . '│' . str_repeat('l', 13) . " AGG 135\n"
+			'1170 DEF ' . str_repeat('l', 36) . '|' . str_repeat('l', 13) . " AGG 135\n"
 			. str_repeat(' ', 37) . 'You: 300',
 			self::plain($slider->fallback($ctx))
 		);

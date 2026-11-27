@@ -1,14 +1,25 @@
 # Measuring the font of the AO client
 
-`AoFontMetric` holds one width per character. The current table was measured by hand and
-is about 7–10 % too wide. A screenshot of the chat suggests that the client sets **Arial at
-about 14 px** (space 4 px, digits 8 px) but draws the glyphs a little smaller. This page
-describes how to measure the real widths in the game.
+`AoFontMetric` holds one width per character. It was measured by hand first; on 2026-11-27 it
+was checked with screenshots of popups made with `bin/font-calibration` (not kept in the
+repository). Results:
 
-## Open questions
-1. The width of every character (to 1/20 px).
-2. Does the client use kerning? (`AV` is about 1 px narrower than `A` + `V` in Arial.)
-3. Do popups use the same font size as the chat?
+- Every character has a whole number of pixels. 139 of the 143 characters in the table were
+  confirmed exactly; the other four were not measurable (see below), none was wrong.
+- **No kerning:** `AVAV…` is exactly as wide as `AAAA…VVVV`, and so for all pairs tested.
+- `|` is 6 px; 51 more Latin-1 characters were measured and added.
+- **The client shows Latin-1 only.** Scripts have to be sent in Latin-1, and every other
+  character (`│`, `•`, `€`, `„`, `“`, `–`, …) shows as `¿`. The slider therefore uses `|` as its
+  marker in AOML and BBML.
+- `%` came out as 10 instead of 20 characters: scripts treat `%` specially. Its width (14 px)
+  is still right.
+- Popups do **not** use the font size of the chat: a screenshot of the chat matched Arial at
+  about 14 px (space 4 px), the popups match the table (space 5 px).
+
+## Not measured, on purpose
+- The chat: we only align text in popups.
+- Characters outside Latin-1: the client cannot show them. The exporters write UTF-8;
+  converting to the client's encoding is the job of the transport, not of this library.
 
 ## Generating the test popups
 ```
