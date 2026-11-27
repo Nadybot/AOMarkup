@@ -22,7 +22,7 @@ Every directory is one real Nadybot command output:
 | `expected-detected.aoxml` | `BbmlImporter` with `detectTables` and `detectLists` on `legacy.bbml`, only for samples with tables or lists (`docs/AoXML.md` §6.1, §6.2); for all others the result must be `expected-import.aoxml` |
 | `expected.aoml` | `AomlExporter` (official client) |
 | `expected.bbml` | `BbmlExporter` (relays) |
-| `expected.lepanel` | `LePanelExporter` (Lost Eden). **Speculative**: uses tags we asked the Lost Eden devs for (`<table>`, `<ul>`, `<stat value unit>`, `<bar left right marker>`) |
+| `expected.lepanel` | `LePanelExporter` (Lost Eden). **Outdated**: written with tags we had asked for (`<table>`, `<ul>`, `<stat value unit>`, `<bar left right marker>`); the real tags are in `docs/LePanel.md`, the files still have to be rewritten |
 | `expected.ansi` | `AnsiExporter`, in ANSI notation (see below) |
 | `expected.txt` | `PlainExporter` |
 | `expected.html` | `HtmlExporter` |

@@ -7,7 +7,7 @@ use AO\Markup\Document;
 use AO\Markup\Exceptions\NotImplementedException;
 use AO\Markup\Metric\{AoFontMetric, TextMetric};
 
-/** AOML with lepanel://v1/ windows for the Lost Eden private server (draft) */
+/** lepanel://v1/ panels for the Lost Eden private server (not built yet, see docs/LePanel.md) */
 final class LePanelExporter extends BaseExporter {
 	public function export(Document $document, RenderContext $context): string {
 		throw NotImplementedException::for(self::class);

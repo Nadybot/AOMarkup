@@ -59,7 +59,7 @@ Pure `Document → Document` steps, combined per exporter:
 |---|---|
 | `AomlExporter` | AOML for the official (Funcom) client; tables and fields are aligned with spaces using `AoFontMetric` |
 | `BbmlExporter` | BBML for relays: like AOML, but named styles stay (`<highlight>…<end>`) so the receiver applies its theme |
-| `LePanelExporter` | AOML with `lepanel://v1/` windows for Lost Eden (draft) |
+| `LePanelExporter` | `lepanel://v1/` panels for Lost Eden (not built yet; tags in `docs/LePanel.md`) |
 | `AnsiExporter` | Terminals: 24-bit colours, OSC 8 hyperlinks, monospace tables |
 | `PlainExporter` | Plain UTF-8 text, monospace tables |
 | `HtmlExporter` | Semantic HTML with `aom-*` CSS classes |
@@ -96,7 +96,7 @@ final class Slider implements Widget {
   every exporter right away. The `ExpansionContext` provides the target's `TextMetric`, so a
   fallback can align things (e.g. the slider marker).
 - **Native renderers are optional**: `NativeRenderer` implementations registered on an
-  exporter, e.g. lepanel `<bar>` or HTML `<meter>` for the slider.
+  exporter, e.g. HTML `<meter>` for the slider or lepanel `<choice>` + `<button>` for a choice.
 - Bots can register their own widgets without a library release.
 
 ## RenderContext

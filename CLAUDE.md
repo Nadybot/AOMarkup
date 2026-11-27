@@ -8,7 +8,8 @@ lepanel (Lost Eden), ANSI, plain text, HTML and Discord. Its first consumer is N
 `WEBSERVER_MODULE/WebChatConverter.php`, `DISCORD/DiscordController.php`).
 Sister package: `nadybot/aolib` (namespace `AO\`, the chat client).
 
-Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
+Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
+(`docs/LePanel.md` for Lost Eden).
 
 ## Ground rules (decided)
 - The document tree is the contract; AoXML is only its text form. The library knows
@@ -64,11 +65,10 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`.
 - PHP `>=8.1.17` (no readonly classes), no I/O, errors as PSR-3 warnings instead of exceptions.
 
 ## Open questions
-- lepanel output is speculative until the Lost Eden devs settle their tags. Requested from them:
-  `<table>` (layout vs. border), `<ul>`/`<ol>`, `<stat>` with static `value`/`unit`,
-  `<bar>` with labels and marker, `<select>` dropdowns that run a command with the chosen value
-  (used by `<choice>`), named windows that are reused (with back/forward), and later
-  replies into the window a command was clicked in (request id round trip).
+- lepanel: the Lost Eden developers described their tags on 2026-11-27 (`docs/LePanel.md`).
+  There are no tables and no inline formatting (bold, colours, links in text) yet; the
+  `expected.lepanel` files predate this and must be rewritten with the real tags before
+  `LePanelExporter` is built. Open questions for them are listed in `docs/LePanel.md`.
 
 ## Conventions
 - Code, comments, docs and commit messages in English.
