@@ -120,7 +120,7 @@ can only give hints; it never decides where a page ends.
 | `<selected>` | The currently selected choice |
 | `<syntax>` | Command syntax; the content is a bot command without prefix |
 | `<u>`, `<i>` | Underline, italic |
-| `<header>`, `<header2>` | Only the colour of the window title / of section titles (the theme's header colours). No structure: headings are `<h1>`, `<h2>` and `<section title>`, the window title is `<window title>`. |
+| `<header>`, `<header2>` | Only the colour of the window title / of section titles (the theme's header colours). No structure: headings are `<h1>`, `<h2>` and `<section title>`, the window title is `<window title>`. In the game, `<h1>`/`<h2>` are a line in these colours; so `BbmlImporter` turns a line that is only `<header>…<end>`/`<header2>…<end>` back into `<h1>`/`<h2>`. |
 
 ### 3.2 Raw colours
 `<black>`, `<white>`, `<yellow>`, `<blue>`, `<green>`, `<red>`, `<orange>`, `<grey>`,

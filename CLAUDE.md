@@ -25,7 +25,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
   `<cmd>`, `<client>`, `<url>`). AoXML has no `<a>`.
 - Emphasis is `<strong>`, not `<highlight>` (the theme colour is still called highlight).
 - `<header>`/`<header2>` are colour styles only (the theme's header colours), like `<neutral>`;
-  structure is `<h1>`, `<h2>`, `<section title>`, `<window title>`.
+  structure is `<h1>`, `<h2>`, `<section title>`, `<window title>`. An `<h2>` is a heading shown in
+  the header2 colour, so a line that is only `<header2>…<end>` imports as `<h2>` (same for h1).
 - Attribute values are always plain text; placeholders only exist as elements in content.
   Bot commands through a channel use `<cmd via="priv|org">`.
 - Windows are defined at the top level (`<window id title>`) and opened with
