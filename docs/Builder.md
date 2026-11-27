@@ -1,8 +1,7 @@
-# Builder API (draft)
+# Builder API
 
 `AO\Markup\Build` (used as `B` below) builds documents in code; the builders it returns
-(`TableBuilder`, `WindowBuilder`, …) are in `AO\Markup\Builder`. Everything here is built except `B::datetime()`, `B::date()`,
-`B::time()` and `B::duration()`, whose widgets are still to come.
+(`TableBuilder`, `WindowBuilder`, …) are in `AO\Markup\Builder`.
 `Build::table()` reads as what it does; `B` is just a short alias.
 
 ```php
@@ -66,7 +65,7 @@ use AO\Markup\Build as B;
 | `B::myname()`, `B::myguild()`, `B::symbol()`, `B::var($name)` | placeholders |
 | `B::unavailable()`, `B::param(…)` | the widgets |
 | `B::datetime($when, $else = null)`, `B::date(…)`, `B::time(…)` | `<datetime/>`, `<date/>`, `<time/>`; `$when` is a Unix time or a `DateTimeInterface`. If it is `null` or `0`, `$else` is used instead (e.g. `'Never'`) and no element is made |
-| `B::duration($seconds, $else = null)` | `<duration/>`, with the same fallback |
+| `B::duration($seconds, $else = null)` | `<duration/>`; only `null` is "none" (`$else`), 0 seconds is a duration (`0 secs`) |
 
 `B::count($n, $singular, $plural = null)` is not an element but a string: `B::count(1, 'ban')`
 is `1 ban`, `B::count(2, 'ban')` is `2 bans` (`$plural` defaults to `$singular` + `s`).

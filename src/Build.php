@@ -58,8 +58,10 @@ use AO\Markup\Node\{
 	UrlLink,
 	WaypointLink,
 };
-use AO\Markup\Widget\Builtin\{Param, Slider, Unavailable};
+use AO\Markup\Widget\Builtin\{Date, Datetime, Duration, Param, Slider, Time, Unavailable};
 use AO\Markup\Widget\{Widget, WidgetNode};
+use DateTimeInterface;
+use Safe\DateTimeImmutable as SafeDateTimeImmutable;
 use Stringable;
 
 /**
@@ -251,6 +253,38 @@ final class Build {
 	/** Marks something as not available in game */
 	public static function unavailable(): WidgetNode {
 		return new WidgetNode(new Unavailable());
+	}
+
+	/**
+	 * A point in time with date and time, shown in the bot's (or the reader's) time zone
+	 *
+	 * $when is a Unix time or a date; if it is null or 0, $else is returned instead (e.g. 'Never')
+	 * and no element is made.
+	 */
+	public static function datetime(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+		$value = self::pointInTime($when);
+		return $value === null ? $else : new WidgetNode(new Datetime($value));
+	}
+
+	/** A date, like B::datetime() */
+	public static function date(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+		$value = self::pointInTime($when);
+		return $value === null ? $else : new WidgetNode(new Date($value));
+	}
+
+	/** A time of day, like B::datetime() */
+	public static function time(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+		$value = self::pointInTime($when);
+		return $value === null ? $else : new WidgetNode(new Time($value));
+	}
+
+	/**
+	 * A length of time in seconds, e.g. until a ban ends
+	 *
+	 * Only null is "none"; 0 seconds is a duration, too.
+	 */
+	public static function duration(?int $seconds, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+		return $seconds === null ? $else : new WidgetNode(new Duration($seconds));
 	}
 
 	/** A command parameter inside B::syntax() */
@@ -487,5 +521,16 @@ final class Build {
 	/** A number with a word: count(1, 'ban') is "1 ban", count(2, 'ban') is "2 bans" */
 	public static function count(int|float $n, string $singular, ?string $plural=null): string {
 		return "{$n} " . ((float)$n === 1.0 ? $singular : ($plural ?? "{$singular}s"));
+	}
+
+	/** A Unix time or a date as DateTimeImmutable; null and 0 are none */
+	private static function pointInTime(null|int|DateTimeInterface $when): ?\DateTimeImmutable {
+		if ($when === null || $when === 0) {
+			return null;
+		}
+		if ($when instanceof DateTimeInterface) {
+			return \DateTimeImmutable::createFromInterface($when);
+		}
+		return new SafeDateTimeImmutable("@{$when}");
 	}
 }

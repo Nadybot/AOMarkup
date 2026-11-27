@@ -15,7 +15,7 @@
 ```
 
 The document tree is the contract. AoXML is just its text form; in code, documents are
-built with the builder (`AO\Markup\Build`, draft in `docs/Builder.md`). Nothing in this
+built with the builder (`AO\Markup\Build`, `docs/Builder.md`). Nothing in this
 library knows about a specific bot: everything bot-specific comes in through the
 `RenderContext`.
 
