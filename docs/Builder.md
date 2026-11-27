@@ -142,21 +142,51 @@ foreach ($setting->options as $value => $label) {
 $window->add(B::section('Predefined Options')->add($choice));
 ```
 
+## AoXML with arguments: `B::format()` and `B::aoxml()`
+For one-liners, AoXML text with named slots reads better than nested builders:
+
+```php
+$context->reply(B::format('No one matching <strong>{search}</strong> is banned.', search: $search));
+$context->reply(B::format($fmt, ...$params));   // an associative array works the same
+```
+
+- **Parsed first, filled in afterwards.** The format string is parsed as AoXML (with the
+  built-in widgets); only then are the arguments put into the tree in place of their slots.
+  Arguments are never parsed, so data cannot break the document, and there is nothing to escape.
+- **Arguments are content**, like everywhere else in the builder: a string or number is text, a
+  node or builder is markup, `null` is nothing. So `{item}` can be `B::item(…)`, `{n}` can be
+  `B::count($n, 'ban')`, `{bans}` can be `$window->link(…)`. Plural rules and formatting of
+  numbers are the caller's job, not the format's.
+- **Slots** are `{name}` with a PHP identifier as name (`[A-Za-z_][A-Za-z0-9_]*`), like in PSR-3
+  log messages. Anything else in braces is text; `{{` is a literal `{` (`{{x}` is the text `{x}`).
+- **Named arguments only.** They are PHP named arguments, so `...$array` with string keys works,
+  too. There are no positional slots (`{0}`); positional arguments give a warning and are ignored.
+  `format` is the name of the first parameter, so `{format}` cannot be used as a slot.
+- **Slots only in content**, never in attribute values (attribute values are plain text):
+  `<cmd command="ban {name}">` gives a warning and keeps `{name}` as text; pass
+  `B::cmd("ban {$name}")` as an argument instead. A `<popup>` cannot be written in the format
+  (its window is unknown there); pass `$window->link(…)` as an argument.
+- **Warnings, no exceptions** (PSR-3, like the parser): a slot without an argument becomes
+  nothing, an argument without a slot is ignored, broken AoXML is handled like in the parser.
+  They go to the logger set once with `B::setLogger($logger)` (none by default) and are
+  reported when `format()`/`aoxml()` is called, so they point to the right line in the bot.
+- `B::format()` gives **inline content**, so it fits everywhere: `B::document()`, `B::p()`,
+  table cells, `addField()`, `reply()`. Blocks in the format string give a warning and are
+  dropped; an empty line is two line breaks.
+- `B::aoxml($format, ...$args)` is the same for **blocks** (`<section>`, `<table>`, `<dl>`, …);
+  in `add()` it adds its blocks in place. A block argument (`B::table()`) splits the paragraph
+  its slot is in; inside a line (e.g. in `<strong>`) it is dropped with a warning. Windows (`<window>`) are not allowed in either; build
+  them with `B::window()`.
+- Format strings are nearly always constants, so their parsed trees are cached per string.
+
+```php
+B::format('{char} bought {item} for <strong>{price}</strong> credits.',
+	char: B::char($name),
+	item: B::item(low: $id, ql: $ql),
+	price: number_format($credits),
+);
+$context->reply(B::format('There are {bans}.', bans: $bans->link(B::strong(B::count($count, 'ban')))));
+```
+
 ## Open
 - `B::document()` with windows that are not linked from the message (allowed in the tree).
-- **`format()` for one-liners**, to discuss. The idea: AoXML with arguments that are escaped
-  like in a prepared statement, so data never breaks the document:
-
-  ```php
-  $context->reply(B::format('No one matching <strong>%s</strong> is banned.', $search));
-  ```
-
-  Questions:
-  - Placeholder syntax: `%s` like `sprintf()`, or named (`{name}`)? `sprintf()` formats
-    (`%d`, `%.1f`) are handy, but `%` also appears in text (`73%`).
-  - Arguments: only text (escaped), or also nodes and builders (`B::item(…)`, `B::count(…)`)?
-  - Result: a document, or inline content that can go into a builder, too?
-  - Where it lives: `Build::format()` in the library, or a method of Nadybot's `Markup` service
-    (which also knows the bot's widgets)?
-  - Plural: `B::count()` as an argument, or plural rules in the format itself?
-- `B::aoxml('…')`: a piece of AoXML inside a builder (parsed with the built-in widgets).

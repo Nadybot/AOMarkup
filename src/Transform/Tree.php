@@ -72,6 +72,23 @@ final class Tree {
 	 * @param Closure(Node):Node $map
 	 */
 	public static function mapChildren(Node $node, Closure $map): Node {
+		return self::children($node, $map);
+	}
+
+	/**
+	 * Like mapChildren(), but $map replaces a child by any number of nodes
+	 *
+	 * The caller is responsible for the result fitting the parent: blocks in block
+	 * containers, inline nodes in inline ones.
+	 *
+	 * @param Closure(Node):list<Node> $map
+	 */
+	public static function flatMapChildren(Node $node, Closure $map): Node {
+		return self::children($node, $map);
+	}
+
+	/** @param Closure(Node):(Node|list<Node>) $map */
+	private static function children(Node $node, Closure $map): Node {
 		return match (true) {
 			$node instanceof FieldList => self::fieldList($node, $map),
 			$node instanceof Field => self::field($node, $map),
@@ -83,7 +100,7 @@ final class Tree {
 		};
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function container(Container $node, Closure $map): Node {
 		$c = self::map($map, $node->children);
 		if ($c === $node->children) {
@@ -120,13 +137,28 @@ final class Tree {
 	}
 
 	/**
-	 * @param Closure(Node):Node $map
-	 * @param list<Node>         $nodes
+	 * @param Closure(Node):(Node|list<Node>) $map
+	 * @param list<Node>                      $nodes
 	 *
 	 * @return list<Node>
 	 */
 	private static function map(Closure $map, array $nodes): array {
-		return array_map($map, $nodes);
+		$mapped = [];
+		$changed = false;
+		foreach ($nodes as $node) {
+			$result = $map($node);
+			if ($result === $node || $result === [$node]) {
+				$mapped []= $node;
+				continue;
+			}
+			$changed = true;
+			if ($result instanceof Node) {
+				$mapped []= $result;
+			} else {
+				array_push($mapped, ...$result);
+			}
+		}
+		return $changed ? $mapped : $nodes;
 	}
 
 	/**
@@ -144,13 +176,13 @@ final class Tree {
 		return $mapped === $nodes ? null : $mapped;
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function list(ListBlock $list, Closure $map): ListBlock {
 		$items = self::changed($list->items, static fn (ListItem $i): ListItem => self::item($i, $map));
 		return $items === null ? $list : new ListBlock($list->ordered, $list->start, ...$items);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function item(ListItem $item, Closure $map): ListItem {
 		$c = self::map($map, $item->children);
 		return $c === $item->children ? $item : new ListItem($item->icon, ...$c);
@@ -159,7 +191,7 @@ final class Tree {
 	/**
 	 * Parts of a table keep being parts of the (mapped) whole table
 	 *
-	 * @param Closure(Node):Node $map
+	 * @param Closure(Node):(Node|list<Node>) $map
 	 */
 	private static function table(Table $table, Closure $map): Table {
 		$rows = self::changed($table->rows, static fn (TableRow $r): TableRow => self::row($r, $map));
@@ -174,7 +206,7 @@ final class Tree {
 		return $mappedWhole->part(...$rows ?? $table->rows);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function fieldList(FieldList $list, Closure $map): FieldList {
 		$fields = self::changed($list->fields, static fn (Field $f): Field => self::field($f, $map));
 		$whole = $list->layout();
@@ -188,7 +220,7 @@ final class Tree {
 		return $mappedWhole->part(...$fields ?? $list->fields);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function field(Field $field, Closure $map): Field {
 		$name = self::map($map, $field->name);
 		$values = self::changed($field->values, static fn (FieldValue $v): FieldValue => self::value($v, $map));
@@ -198,19 +230,19 @@ final class Tree {
 		return new Field($name, ...$values ?? $field->values);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function value(FieldValue $value, Closure $map): FieldValue {
 		$c = self::map($map, $value->children);
 		return $c === $value->children ? $value : new FieldValue($value->unit, ...$c);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function row(TableRow $row, Closure $map): TableRow {
 		$cells = self::changed($row->cells, static fn (TableCell $c): TableCell => self::cell($c, $map));
 		return $cells === null ? $row : new TableRow(...$cells);
 	}
 
-	/** @param Closure(Node):Node $map */
+	/** @param Closure(Node):(Node|list<Node>) $map */
 	private static function cell(TableCell $cell, Closure $map): TableCell {
 		$c = self::map($map, $cell->children);
 		return $c === $cell->children ? $cell : new TableCell($cell->header, $cell->align, $cell->colspan, ...$c);

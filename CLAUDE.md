@@ -73,7 +73,8 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`, 
 - Text is aligned in popups only; the chat font (a different size) is not measured.
 
 ## Status
-- Built: AoXML parser and serializer, the builder (`AO\Markup\Build`, `docs/Builder.md`), widgets
+- Built: AoXML parser and serializer, the builder (`AO\Markup\Build`, `docs/Builder.md`, with
+  `B::format()`/`B::aoxml()` for AoXML with `{name}` slots), widgets
   (slider, choice, unavailable, param, datetime/date/time, duration), placeholder resolver,
   widget expander, paginator (also by Discord's limits), exporters for AOML, BBML, ANSI, plain
   text, HTML and Discord, `BbmlImporter` (with optional table and list detection), font metric
@@ -82,7 +83,7 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`, 
   both are stubs that still throw `NotImplementedException`.
 - Next: integrating the library into Nadybot (`docs/Nadybot.md`). README and the first release
   only after that, when the interface has proven itself.
-- Open: `format()` / `B::aoxml()` (`docs/Builder.md`, "Open"); a `<cmd>` with its own link text
+- Open: a `<cmd>` with its own link text
   shows no command outside the game (accepted for now).
 
 ## Open questions

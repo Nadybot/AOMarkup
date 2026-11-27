@@ -127,6 +127,7 @@ final class ContentConverter {
 			$piece instanceof Fragment => self::inline($piece->children, $context),
 			$piece instanceof Node => [$piece],
 			$piece instanceof InlineBuilder => $piece->nodes($context),
+			$piece instanceof AoXmlBuilder => $piece->nodes($context),
 			$piece instanceof BlockBuilder => [$piece->node($context)],
 			// Other Content implementations are not known to the builder
 			$piece instanceof Content => [],

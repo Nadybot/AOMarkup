@@ -3,6 +3,7 @@
 namespace AO\Markup;
 
 use AO\Markup\Builder\{
+	AoXmlBuilder,
 	BuildContext,
 	CellBuilder,
 	ChoiceBuilder,
@@ -12,6 +13,7 @@ use AO\Markup\Builder\{
 	DlBuilder,
 	DtBuilder,
 	ElementBuilder,
+	FormatBuilder,
 	InlineBlockBuilder,
 	LiBuilder,
 	ListBuilder,
@@ -59,6 +61,7 @@ use AO\Markup\Node\{
 use AO\Markup\Widget\Builtin\{Date, Datetime, Duration, Param, Slider, Time, Unavailable};
 use AO\Markup\Widget\{Widget, WidgetNode};
 use DateTimeInterface;
+use Psr\Log\{LoggerInterface, NullLogger};
 use Safe\DateTimeImmutable as SafeDateTimeImmutable;
 use Stringable;
 
@@ -71,6 +74,40 @@ use Stringable;
  * line break), a node, a builder, or null (nothing).
  */
 final class Build {
+	private static ?LoggerInterface $logger = null;
+
+	/** Where B::format() and B::aoxml() report problems; nowhere by default */
+	public static function setLogger(?LoggerInterface $logger): void {
+		self::$logger = $logger;
+	}
+
+	// ------------------------------------------------------------------
+	// AoXML with arguments
+	// ------------------------------------------------------------------
+
+	/**
+	 * Inline AoXML whose {name} slots are filled by the named arguments
+	 *
+	 *     B::format('No one matching <strong>{search}</strong> is banned.', search: $search)
+	 *     B::format($format, ...$params)
+	 *
+	 * The format is parsed first, then the arguments are put in place of their slots, so
+	 * they are never parsed. "{{" is a literal "{". Slots only work in content, not in
+	 * attribute values. See docs/Builder.md.
+	 */
+	public static function format(string $format, null|string|int|float|Stringable|InlineContent ...$args): FormatBuilder {
+		return new FormatBuilder($format, $args, self::$logger ?? new NullLogger());
+	}
+
+	/**
+	 * AoXML blocks whose {name} slots are filled by the named arguments, like format()
+	 *
+	 * As content of a block container, its blocks are added in place.
+	 */
+	public static function aoxml(string $format, null|string|int|float|Stringable|Content ...$args): AoXmlBuilder {
+		return new AoXmlBuilder($format, $args, self::$logger ?? new NullLogger());
+	}
+
 	// ------------------------------------------------------------------
 	// Messages and windows
 	// ------------------------------------------------------------------
