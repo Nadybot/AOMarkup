@@ -3,18 +3,16 @@
 namespace AO\Markup;
 
 use AO\Markup\Builder\{
-	BlockBuilder,
 	BuildContext,
 	CellBuilder,
 	ChoiceBuilder,
 	ContainerBuilder,
-	Content,
+	ContentConverter,
 	DdBuilder,
 	DlBuilder,
 	DtBuilder,
 	ElementBuilder,
 	InlineBlockBuilder,
-	InlineBuilder,
 	LiBuilder,
 	ListBuilder,
 	OptionBuilder,
@@ -84,12 +82,12 @@ final class Build {
 	 * Windows are added in the order of their first link, each once. A window without
 	 * an id, or whose id another window has, gets the next free "window1", "window2", ….
 	 */
-	public static function document(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): Document {
+	public static function document(null|string|int|float|Stringable|Content ...$content): Document {
 		$content = array_values($content);
 		$links = new BuildContext();
-		Content::flow($content, $links);
+		ContentConverter::flow($content, $links);
 		$context = BuildContext::for($links->windows());
-		$body = Content::flow($content, $context);
+		$body = ContentConverter::flow($content, $context);
 		$windows = [];
 		foreach ($links->windows() as $window) {
 			$id = $context->idOf($window);
@@ -108,41 +106,41 @@ final class Build {
 	// ------------------------------------------------------------------
 
 	/** A section; add() takes any blocks */
-	public static function section(string $title, null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): ContainerBuilder {
+	public static function section(string $title, null|string|int|float|Stringable|Content ...$content): ContainerBuilder {
 		return (new ContainerBuilder(static fn (Node ...$children): Node => new Section($title, ...$children)))->add(...$content);
 	}
 
-	public static function indent(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): ContainerBuilder {
+	public static function indent(null|string|int|float|Stringable|Content ...$content): ContainerBuilder {
 		return (new ContainerBuilder(static fn (Node ...$children): Node => new Indent(...$children)))->add(...$content);
 	}
 
-	public static function center(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): ContainerBuilder {
+	public static function center(null|string|int|float|Stringable|Content ...$content): ContainerBuilder {
 		return (new ContainerBuilder(static fn (Node ...$children): Node => new Center(...$children)))->add(...$content);
 	}
 
-	public static function keep(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): ContainerBuilder {
+	public static function keep(null|string|int|float|Stringable|Content ...$content): ContainerBuilder {
 		return (new ContainerBuilder(static fn (Node ...$children): Node => new Keep(...$children)))->add(...$content);
 	}
 
-	public static function repeat(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): ContainerBuilder {
+	public static function repeat(null|string|int|float|Stringable|Content ...$content): ContainerBuilder {
 		return (new ContainerBuilder(static fn (Node ...$children): Node => new Repeat(...$children)))->add(...$content);
 	}
 
 	/** A closing note of a window; inline content */
-	public static function footer(null|string|int|float|Stringable|Node|InlineBuilder ...$content): InlineBlockBuilder {
+	public static function footer(null|string|int|float|Stringable|InlineContent ...$content): InlineBlockBuilder {
 		return (new InlineBlockBuilder(static fn (Node ...$children): Node => new Footer(...$children)))->add(...$content);
 	}
 
 	/** A paragraph of these inline pieces */
-	public static function p(null|string|int|float|Stringable|Node|InlineBuilder ...$content): InlineBlockBuilder {
+	public static function p(null|string|int|float|Stringable|InlineContent ...$content): InlineBlockBuilder {
 		return (new InlineBlockBuilder(static fn (Node ...$children): Node => new Paragraph(...$children)))->add(...$content);
 	}
 
-	public static function h1(null|string|int|float|Stringable|Node|InlineBuilder ...$content): InlineBlockBuilder {
+	public static function h1(null|string|int|float|Stringable|InlineContent ...$content): InlineBlockBuilder {
 		return (new InlineBlockBuilder(static fn (Node ...$children): Node => new Heading(1, ...$children)))->add(...$content);
 	}
 
-	public static function h2(null|string|int|float|Stringable|Node|InlineBuilder ...$content): InlineBlockBuilder {
+	public static function h2(null|string|int|float|Stringable|InlineContent ...$content): InlineBlockBuilder {
 		return (new InlineBlockBuilder(static fn (Node ...$children): Node => new Heading(2, ...$children)))->add(...$content);
 	}
 
@@ -167,7 +165,7 @@ final class Build {
 
 	/** A data cell; add() takes any blocks */
 	public static function td(
-		null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder $content=null,
+		null|string|int|float|Stringable|Content $content=null,
 		?Align $align=null,
 		int $colspan=1,
 	): CellBuilder {
@@ -176,7 +174,7 @@ final class Build {
 
 	/** A header cell; add() takes any blocks */
 	public static function th(
-		null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder $content=null,
+		null|string|int|float|Stringable|Content $content=null,
 		?Align $align=null,
 		int $colspan=1,
 	): CellBuilder {
@@ -189,12 +187,12 @@ final class Build {
 	}
 
 	/** A field with this name; add() takes only values (B::dd()) */
-	public static function dt(null|string|int|float|Stringable|Node|InlineBuilder ...$name): DtBuilder {
+	public static function dt(null|string|int|float|Stringable|InlineContent ...$name): DtBuilder {
 		return new DtBuilder(...$name);
 	}
 
 	/** A value of a field */
-	public static function dd(null|string|int|float|Stringable|Node|InlineBuilder $content=null, ?string $unit=null): DdBuilder {
+	public static function dd(null|string|int|float|Stringable|InlineContent $content=null, ?string $unit=null): DdBuilder {
 		return (new DdBuilder($unit))->add($content);
 	}
 
@@ -214,7 +212,7 @@ final class Build {
 	 * @param null|string|Image $icon An image reference (rdb:12345, tdb:GFX_…) or image
 	 */
 	public static function li(
-		null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder $content=null,
+		null|string|int|float|Stringable|Content $content=null,
 		null|string|Image $icon=null,
 	): LiBuilder {
 		return (new LiBuilder(is_string($icon) ? self::img($icon) : $icon))->add($content);
@@ -232,7 +230,7 @@ final class Build {
 	/** An option of a choice; the label is its content */
 	public static function option(
 		string|int $value,
-		null|string|int|float|Stringable|Node|InlineBuilder $label=null,
+		null|string|int|float|Stringable|InlineContent $label=null,
 		bool $selected=false,
 	): OptionBuilder {
 		return (new OptionBuilder((string)$value, $selected))->add($label);
@@ -261,19 +259,19 @@ final class Build {
 	 * $when is a Unix time or a date; if it is null or 0, $else is returned instead (e.g. 'Never')
 	 * and no element is made.
 	 */
-	public static function datetime(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+	public static function datetime(null|int|DateTimeInterface $when, null|string|int|float|Stringable|InlineContent $else=null): null|string|int|float|Stringable|InlineContent {
 		$value = self::pointInTime($when);
 		return $value === null ? $else : new WidgetNode(new Datetime($value));
 	}
 
 	/** A date, like B::datetime() */
-	public static function date(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+	public static function date(null|int|DateTimeInterface $when, null|string|int|float|Stringable|InlineContent $else=null): null|string|int|float|Stringable|InlineContent {
 		$value = self::pointInTime($when);
 		return $value === null ? $else : new WidgetNode(new Date($value));
 	}
 
 	/** A time of day, like B::datetime() */
-	public static function time(null|int|DateTimeInterface $when, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+	public static function time(null|int|DateTimeInterface $when, null|string|int|float|Stringable|InlineContent $else=null): null|string|int|float|Stringable|InlineContent {
 		$value = self::pointInTime($when);
 		return $value === null ? $else : new WidgetNode(new Time($value));
 	}
@@ -283,17 +281,17 @@ final class Build {
 	 *
 	 * Only null is "none"; 0 seconds is a duration, too.
 	 */
-	public static function duration(?int $seconds, null|string|int|float|Stringable|Node|InlineBuilder $else=null): null|string|int|float|Stringable|Node|InlineBuilder {
+	public static function duration(?int $seconds, null|string|int|float|Stringable|InlineContent $else=null): null|string|int|float|Stringable|InlineContent {
 		return $seconds === null ? $else : new WidgetNode(new Duration($seconds));
 	}
 
 	/** A command parameter inside B::syntax() */
-	public static function param(null|string|int|float|Stringable|Node|InlineBuilder ...$content): WidgetBuilder {
+	public static function param(null|string|int|float|Stringable|InlineContent ...$content): WidgetBuilder {
 		return new WidgetBuilder(new Param(), ...$content);
 	}
 
 	/** Any widget with its content */
-	public static function widget(Widget $widget, null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$children): WidgetBuilder {
+	public static function widget(Widget $widget, null|string|int|float|Stringable|Content ...$children): WidgetBuilder {
 		return new WidgetBuilder($widget, ...$children);
 	}
 
@@ -302,7 +300,7 @@ final class Build {
 	// ------------------------------------------------------------------
 
 	/** A sequence of inline content */
-	public static function text(null|string|int|float|Stringable|Node|InlineBuilder ...$content): TextBuilder {
+	public static function text(null|string|int|float|Stringable|InlineContent ...$content): TextBuilder {
 		return new TextBuilder(...$content);
 	}
 
@@ -311,7 +309,7 @@ final class Build {
 	}
 
 	/** A style by name; content without a style if there is no style of that name */
-	public static function style(StyleName|string $style, null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function style(StyleName|string $style, null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		$style = is_string($style) ? StyleName::tryFrom($style) : $style;
 		return new ElementBuilder(
 			static fn (Node ...$children): array => $style === null ? array_values($children) : [new Style($style, ...$children)],
@@ -320,111 +318,111 @@ final class Build {
 	}
 
 	/** Emphasis */
-	public static function strong(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function strong(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Strong, ...$content);
 	}
 
 	/** The colour of the window title */
-	public static function header(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function header(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Header, ...$content);
 	}
 
 	/** The colour of section titles */
-	public static function header2(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function header2(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Header2, ...$content);
 	}
 
-	public static function on(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function on(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::On, ...$content);
 	}
 
-	public static function off(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function off(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Off, ...$content);
 	}
 
-	public static function neutral(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function neutral(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Neutral, ...$content);
 	}
 
-	public static function omni(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function omni(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Omni, ...$content);
 	}
 
-	public static function clan(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function clan(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Clan, ...$content);
 	}
 
-	public static function unknown(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function unknown(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Unknown, ...$content);
 	}
 
 	/** A part matching a search */
-	public static function match(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function match(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Match, ...$content);
 	}
 
 	/** The currently selected choice */
-	public static function selected(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function selected(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Selected, ...$content);
 	}
 
 	/** Command syntax, a bot command without prefix */
-	public static function syntax(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function syntax(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Syntax, ...$content);
 	}
 
 	/** Underline */
-	public static function u(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function u(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Underline, ...$content);
 	}
 
 	/** Italic */
-	public static function i(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function i(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Italic, ...$content);
 	}
 
-	public static function black(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function black(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Black, ...$content);
 	}
 
-	public static function white(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function white(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::White, ...$content);
 	}
 
-	public static function yellow(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function yellow(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Yellow, ...$content);
 	}
 
-	public static function blue(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function blue(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Blue, ...$content);
 	}
 
-	public static function green(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function green(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Green, ...$content);
 	}
 
-	public static function red(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function red(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Red, ...$content);
 	}
 
-	public static function orange(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function orange(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Orange, ...$content);
 	}
 
-	public static function grey(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function grey(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Grey, ...$content);
 	}
 
-	public static function cyan(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function cyan(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Cyan, ...$content);
 	}
 
-	public static function violet(null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function violet(null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		return self::style(StyleName::Violet, ...$content);
 	}
 
 	/** A raw colour, #RRGGBB; content without a colour if it is not one */
-	public static function color(string $hex, null|string|int|float|Stringable|Node|InlineBuilder ...$content): ElementBuilder {
+	public static function color(string $hex, null|string|int|float|Stringable|InlineContent ...$content): ElementBuilder {
 		$hex = \Safe\preg_match('/^#?([0-9A-Fa-f]{6})$/', $hex, $m) === 1 && isset($m[1]) ? '#' . strtoupper($m[1]) : null;
 		return new ElementBuilder(
 			static fn (Node ...$children): array => $hex === null ? array_values($children) : [new Color($hex, ...$children)],
@@ -437,23 +435,23 @@ final class Build {
 		int $low,
 		?int $high=null,
 		int $ql=1,
-		null|string|int|float|Stringable|Node|InlineBuilder $label=null,
+		null|string|int|float|Stringable|InlineContent $label=null,
 	): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new ItemLink($low, $high ?? $low, $ql, ...$children)], $label);
 	}
 
 	/** A nano program; the content is the link text */
-	public static function nano(int $id, null|string|int|float|Stringable|Node|InlineBuilder ...$label): ElementBuilder {
+	public static function nano(int $id, null|string|int|float|Stringable|InlineContent ...$label): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new NanoLink($id, ...$children)], ...$label);
 	}
 
 	/** A skill; the content is the link text */
-	public static function skill(int $id, null|string|int|float|Stringable|Node|InlineBuilder ...$label): ElementBuilder {
+	public static function skill(int $id, null|string|int|float|Stringable|InlineContent ...$label): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new SkillLink($id, ...$children)], ...$label);
 	}
 
 	/** A character; without content, the name is the link text */
-	public static function char(string $name, null|string|int|float|Stringable|Node|InlineBuilder ...$label): ElementBuilder {
+	public static function char(string $name, null|string|int|float|Stringable|InlineContent ...$label): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new CharLink($name, ...$children)], ...$label);
 	}
 
@@ -462,7 +460,7 @@ final class Build {
 		int $x,
 		int $y,
 		int $pf,
-		null|string|int|float|Stringable|Node|InlineBuilder $label=null,
+		null|string|int|float|Stringable|InlineContent $label=null,
 	): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new WaypointLink($x, $y, $pf, ...$children)], $label);
 	}
@@ -470,7 +468,7 @@ final class Build {
 	/** A command for this bot, without prefix; without a label, the link text is generated */
 	public static function cmd(
 		string $command,
-		null|string|int|float|Stringable|Node|InlineBuilder $label=null,
+		null|string|int|float|Stringable|InlineContent $label=null,
 		CommandDisplay $show=CommandDisplay::Command,
 		CommandChannel $via=CommandChannel::Tell,
 	): ElementBuilder {
@@ -478,12 +476,12 @@ final class Build {
 	}
 
 	/** A command for the game client; without content, the command is the link text */
-	public static function client(string $command, null|string|int|float|Stringable|Node|InlineBuilder ...$label): ElementBuilder {
+	public static function client(string $command, null|string|int|float|Stringable|InlineContent ...$label): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new ClientCommandLink($command, ...$children)], ...$label);
 	}
 
 	/** An external link */
-	public static function url(string $href, null|string|int|float|Stringable|Node|InlineBuilder ...$label): ElementBuilder {
+	public static function url(string $href, null|string|int|float|Stringable|InlineContent ...$label): ElementBuilder {
 		return new ElementBuilder(static fn (Node ...$children): array => [new UrlLink($href, ...$children)], ...$label);
 	}
 

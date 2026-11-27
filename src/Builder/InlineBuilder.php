@@ -2,10 +2,12 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\InlineContent;
+
 use AO\Markup\Node\{Fragment, Node};
 
 /** A builder of inline content: styles, links, text */
-abstract class InlineBuilder implements Builder {
+abstract class InlineBuilder implements Builder, InlineContent {
 	/** A single node, or a Fragment if the content is not exactly one node */
 	public function build(): Node {
 		$nodes = $this->nodes(new BuildContext());

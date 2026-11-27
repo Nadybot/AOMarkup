@@ -2,6 +2,8 @@
 
 namespace AO\Markup\Node;
 
+use AO\Markup\Content;
+
 /** Any node of the document tree */
-interface Node {
+interface Node extends Content {
 }

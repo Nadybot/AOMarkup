@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\Content;
 use AO\Markup\Node\{BlockNode, Fragment, LineBreak, Node, Paragraph, Text};
 use AO\Markup\Widget\{AsWidget, WidgetNode};
 use ReflectionClass;
@@ -15,14 +16,14 @@ use Stringable;
  *
  * @internal
  */
-final class Content {
+final class ContentConverter {
 	/** @var array<class-string,?AsWidget> */
 	private static array $definitions = [];
 
 	/**
 	 * Inline content; adjacent texts are joined
 	 *
-	 * @param list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> $content
+	 * @param list<null|string|int|float|Stringable|Content> $content
 	 *
 	 * @return list<Node>
 	 */
@@ -47,7 +48,7 @@ final class Content {
 	/**
 	 * Flow content: blocks stay blocks, each run of inline content between them is one paragraph
 	 *
-	 * @param list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> $content
+	 * @param list<null|string|int|float|Stringable|Content> $content
 	 *
 	 * @return list<Node>
 	 */
@@ -74,7 +75,7 @@ final class Content {
 	/**
 	 * Blocks: every piece of content is one block, inline content becomes a paragraph
 	 *
-	 * @param list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> $content
+	 * @param list<null|string|int|float|Stringable|Content> $content
 	 *
 	 * @return list<Node>
 	 */
@@ -120,13 +121,15 @@ final class Content {
 	}
 
 	/** @return list<Node> */
-	private static function nodes(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder $piece, BuildContext $context): array {
+	private static function nodes(null|string|int|float|Stringable|Content $piece, BuildContext $context): array {
 		return match (true) {
 			$piece === null => [],
 			$piece instanceof Fragment => self::inline($piece->children, $context),
 			$piece instanceof Node => [$piece],
 			$piece instanceof InlineBuilder => $piece->nodes($context),
 			$piece instanceof BlockBuilder => [$piece->node($context)],
+			// Other Content implementations are not known to the builder
+			$piece instanceof Content => [],
 			default => self::text((string)$piece),
 		};
 	}

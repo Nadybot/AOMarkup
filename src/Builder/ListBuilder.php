@@ -2,7 +2,8 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{ListBlock, ListItem, Node};
+use AO\Markup\Content;
+use AO\Markup\Node\{ListBlock, ListItem};
 use Stringable;
 
 /** A list, <ul> or <ol>; takes only items */
@@ -28,7 +29,7 @@ final class ListBuilder extends BlockBuilder {
 	 * Inline pieces next to each other form one paragraph, like B::p(); blocks (e.g. a
 	 * nested list) stay blocks. null is left out; without content, no item is added.
 	 */
-	public function addItem(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): static {
+	public function addItem(null|string|int|float|Stringable|Content ...$content): static {
 		$content = array_values(array_filter($content, static fn (mixed $piece): bool => $piece !== null));
 		return count($content) === 0 ? $this : $this->add(LiBuilder::flow($content));
 	}

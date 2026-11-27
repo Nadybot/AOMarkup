@@ -2,7 +2,8 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{CommandChannel, Node};
+use AO\Markup\InlineContent;
+use AO\Markup\Node\{CommandChannel};
 use AO\Markup\Widget\Builtin\Choice;
 use AO\Markup\Widget\WidgetNode;
 use Stringable;
@@ -28,7 +29,7 @@ final class ChoiceBuilder extends BlockBuilder {
 	/** Add an option; the label is its content */
 	public function addOption(
 		string|int $value,
-		null|string|int|float|Stringable|Node|InlineBuilder $label,
+		null|string|int|float|Stringable|InlineContent $label,
 		bool $selected=false,
 	): static {
 		return $this->add((new OptionBuilder((string)$value, $selected))->add($label));

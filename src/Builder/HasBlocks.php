@@ -2,12 +2,13 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\Content;
 use AO\Markup\Node\Node;
 use Stringable;
 
 /** A block container: any blocks, every piece of inline content becomes a paragraph */
 trait HasBlocks {
-	/** @var list<list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder>> Flow content, see Content::flow() */
+	/** @var list<list<null|string|int|float|Stringable|Content>> Flow content, see ContentConverter::flow() */
 	private array $content = [];
 
 	/**
@@ -16,7 +17,7 @@ trait HasBlocks {
 	 * Each argument is one block: a string, number, inline node or inline builder
 	 * becomes a paragraph of its own. Use B::p() for a paragraph of several pieces.
 	 */
-	public function add(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$content): static {
+	public function add(null|string|int|float|Stringable|Content ...$content): static {
 		foreach ($content as $piece) {
 			$this->content []= [$piece];
 		}
@@ -26,7 +27,7 @@ trait HasBlocks {
 	/**
 	 * Add flow content: blocks stay blocks, each run of inline pieces is one paragraph
 	 *
-	 * @param list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> $content
+	 * @param list<null|string|int|float|Stringable|Content> $content
 	 */
 	private function addFlow(array $content): void {
 		$this->content []= $content;
@@ -36,7 +37,7 @@ trait HasBlocks {
 	private function blocks(BuildContext $context): array {
 		$blocks = [];
 		foreach ($this->content as $flow) {
-			array_push($blocks, ...Content::flow($flow, $context));
+			array_push($blocks, ...ContentConverter::flow($flow, $context));
 		}
 		return $blocks;
 	}

@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\Content;
 use AO\Markup\Node\Node;
 use AO\Markup\Widget\{Widget, WidgetNode};
 use Stringable;
@@ -13,28 +14,28 @@ use Stringable;
  * blocks, like in a section; otherwise it is inline.
  */
 final class WidgetBuilder extends InlineBuilder {
-	/** @var list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> */
+	/** @var list<null|string|int|float|Stringable|Content> */
 	private array $children = [];
 
 	public function __construct(
 		public readonly Widget $widget,
-		null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$children,
+		null|string|int|float|Stringable|Content ...$children,
 	) {
 		$this->add(...$children);
 	}
 
 	/** Add content */
-	public function add(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder ...$children): static {
+	public function add(null|string|int|float|Stringable|Content ...$children): static {
 		array_push($this->children, ...array_values($children));
 		return $this;
 	}
 
 	/** @return list<Node> */
 	public function nodes(BuildContext $context): array {
-		$definition = Content::definition($this->widget::class);
+		$definition = ContentConverter::definition($this->widget::class);
 		$children = $definition !== null && $definition->block && $definition->only === null
-			? Content::blocks($this->children, $context)
-			: Content::inline($this->children, $context);
+			? ContentConverter::blocks($this->children, $context)
+			: ContentConverter::inline($this->children, $context);
 		return [new WidgetNode($this->widget, ...$children)];
 	}
 }

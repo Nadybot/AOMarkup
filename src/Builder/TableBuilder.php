@@ -2,7 +2,8 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{Node, Table, TableCell, TableRow};
+use AO\Markup\Content;
+use AO\Markup\Node\{Table, TableCell, TableRow};
 use Stringable;
 
 /** A table; takes only rows */
@@ -27,12 +28,12 @@ final class TableBuilder extends BlockBuilder {
 	 * A cell builder (B::td(), B::th()) or cell is used as it is, anything else is the
 	 * content of a <td>; null is an empty cell.
 	 */
-	public function addRow(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder|CellBuilder ...$cells): static {
+	public function addRow(null|string|int|float|Stringable|Content|CellBuilder ...$cells): static {
 		return $this->add(self::row(false, $cells));
 	}
 
 	/** Add a header row: like addRow(), but content becomes a <th> */
-	public function addHeaderRow(null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder|CellBuilder ...$cells): static {
+	public function addHeaderRow(null|string|int|float|Stringable|Content|CellBuilder ...$cells): static {
 		return $this->add(self::row(true, $cells));
 	}
 
@@ -47,7 +48,7 @@ final class TableBuilder extends BlockBuilder {
 		return $this->node(new BuildContext());
 	}
 
-	/** @param array<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder|CellBuilder> $cells */
+	/** @param array<null|string|int|float|Stringable|Content|CellBuilder> $cells */
 	private static function row(bool $header, array $cells): TrBuilder {
 		$row = new TrBuilder();
 		foreach ($cells as $cell) {

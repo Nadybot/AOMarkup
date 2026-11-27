@@ -2,7 +2,8 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{Image, ListItem, Node};
+use AO\Markup\Content;
+use AO\Markup\Node\{Image, ListItem};
 use Stringable;
 
 /** A list item, <li>; a block container */
@@ -28,7 +29,7 @@ final class LiBuilder implements Builder {
 	 *
 	 * @internal
 	 *
-	 * @param list<null|string|int|float|Stringable|Node|InlineBuilder|BlockBuilder> $content
+	 * @param list<null|string|int|float|Stringable|Content> $content
 	 */
 	public static function flow(array $content): self {
 		$item = new self();

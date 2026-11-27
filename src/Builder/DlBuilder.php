@@ -2,7 +2,8 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{Field, FieldList, Node};
+use AO\Markup\InlineContent;
+use AO\Markup\Node\{Field, FieldList};
 use Stringable;
 
 /** A field list, <dl>; takes only fields */
@@ -23,8 +24,8 @@ final class DlBuilder extends BlockBuilder {
 	 * are null are left out; without values, the whole field is left out.
 	 */
 	public function addField(
-		string|int|float|Stringable|Node|InlineBuilder $name,
-		null|string|int|float|Stringable|Node|InlineBuilder|DdBuilder ...$values,
+		string|int|float|Stringable|InlineContent $name,
+		null|string|int|float|Stringable|InlineContent|DdBuilder ...$values,
 	): static {
 		$dds = [];
 		foreach ($values as $value) {

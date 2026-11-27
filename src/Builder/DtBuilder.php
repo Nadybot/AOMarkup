@@ -2,18 +2,19 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\Node\{Field, FieldValue, Node};
+use AO\Markup\InlineContent;
+use AO\Markup\Node\{Field, FieldValue};
 use Stringable;
 
 /** A field of a field list: the name (<dt>) and its values; takes only values */
 final class DtBuilder implements Builder {
-	/** @var list<null|string|int|float|Stringable|Node|InlineBuilder> */
+	/** @var list<null|string|int|float|Stringable|InlineContent> */
 	private array $name;
 
 	/** @var list<DdBuilder|FieldValue> */
 	private array $values = [];
 
-	public function __construct(null|string|int|float|Stringable|Node|InlineBuilder ...$name) {
+	public function __construct(null|string|int|float|Stringable|InlineContent ...$name) {
 		$this->name = array_values($name);
 	}
 
@@ -29,7 +30,7 @@ final class DtBuilder implements Builder {
 
 	/** @internal */
 	public function field(BuildContext $context): Field {
-		return new Field(Content::inline($this->name, $context), ...array_map(
+		return new Field(ContentConverter::inline($this->name, $context), ...array_map(
 			static fn (DdBuilder|FieldValue $value): FieldValue => $value instanceof DdBuilder ? $value->value($context) : $value,
 			$this->values
 		));

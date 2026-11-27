@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\InlineContent;
 use AO\Markup\Node\Node;
 use Stringable;
 
@@ -9,7 +10,7 @@ use Stringable;
 final class TextBuilder extends InlineBuilder {
 	use HasInline;
 
-	public function __construct(null|string|int|float|Stringable|Node|InlineBuilder ...$content) {
+	public function __construct(null|string|int|float|Stringable|InlineContent ...$content) {
 		$this->add(...$content);
 	}
 

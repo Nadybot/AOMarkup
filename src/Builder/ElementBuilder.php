@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\InlineContent;
 use AO\Markup\Node\Node;
 use Closure;
 use Stringable;
@@ -17,7 +18,7 @@ final class ElementBuilder extends InlineBuilder {
 	/** @param Closure(Node...):list<Node> $factory */
 	public function __construct(
 		private readonly Closure $factory,
-		null|string|int|float|Stringable|Node|InlineBuilder ...$content,
+		null|string|int|float|Stringable|InlineContent ...$content,
 	) {
 		$this->add(...$content);
 	}

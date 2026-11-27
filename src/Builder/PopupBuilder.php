@@ -2,6 +2,7 @@
 
 namespace AO\Markup\Builder;
 
+use AO\Markup\InlineContent;
 use AO\Markup\Node\{Node, PopupLink, Text};
 use Stringable;
 
@@ -16,7 +17,7 @@ final class PopupBuilder extends InlineBuilder {
 
 	public function __construct(
 		public readonly WindowBuilder $window,
-		null|string|int|float|Stringable|Node|InlineBuilder ...$content,
+		null|string|int|float|Stringable|InlineContent ...$content,
 	) {
 		$this->add(...$content);
 	}

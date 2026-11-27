@@ -24,6 +24,10 @@ use AO\Markup\Build as B;
   builder is markup, `null` is nothing. `addField()` leaves out `null` values and the whole field
   if none is left, `addItem()` leaves out an item without content; in `addRow()`, `null` is an
   empty cell.
+- **Types:** content is `null|string|int|float|Stringable|Content` in block positions and
+  `null|string|int|float|Stringable|InlineContent` inside a line. `AO\Markup\Content` is
+  implemented by every node and builder, `AO\Markup\InlineContent` by inline nodes, fragments,
+  widget nodes and inline builders.
 - Builders are mutable; the tree is not. `->build()` makes the nodes; elements without content
   (`B::hr()`, `B::br()`, `B::img()`, `B::slider()`, `B::unavailable()`, placeholders) are nodes
   right away. Methods that take content (and `reply()` in a bot) build automatically.

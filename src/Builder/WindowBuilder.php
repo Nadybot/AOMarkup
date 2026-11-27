@@ -2,8 +2,7 @@
 
 namespace AO\Markup\Builder;
 
-use AO\Markup\{Build, Document, Window};
-use AO\Markup\Node\Node;
+use AO\Markup\{Build, Document, InlineContent, Window};
 use Stringable;
 
 /**
@@ -21,12 +20,12 @@ final class WindowBuilder implements Builder {
 	}
 
 	/** The popup link that opens this window; without content, the title is the link text */
-	public function link(null|string|int|float|Stringable|Node|InlineBuilder ...$label): PopupBuilder {
+	public function link(null|string|int|float|Stringable|InlineContent ...$label): PopupBuilder {
 		return new PopupBuilder($this, ...$label);
 	}
 
 	/** A message that is only the link to this window, with the window */
-	public function asDocument(null|string|int|float|Stringable|Node|InlineBuilder $link=null): Document {
+	public function asDocument(null|string|int|float|Stringable|InlineContent $link=null): Document {
 		return Build::document($this->link($link));
 	}
 
