@@ -25,6 +25,22 @@ final class BuildTest extends TestCase {
 		$this->assertSame('1.5 hours', B::count(1.5, 'hour'));
 	}
 
+	public function testJoin(): void {
+		$names = ['Nady', 'Tyrence', 'Ita'];
+		$this->assertSame(
+			'<strong>Nady</strong>, <strong>Tyrence</strong>, <strong>Ita</strong>',
+			self::inline(B::join(array_map(B::strong(...), $names)))
+		);
+		$this->assertSame(
+			'<strong>Nady</strong>, <strong>Tyrence</strong> and <strong>Ita</strong>',
+			self::inline(B::join(array_map(B::strong(...), $names), last: ' and '))
+		);
+		$this->assertSame('a and b', self::inline(B::join(['a', null, 'b'], last: ' and ')));
+		$this->assertSame('a', self::inline(B::join(['a'], last: ' and ')));
+		$this->assertSame('', self::inline(B::join([])));
+		$this->assertSame('a<grey> | </grey>b', self::inline(B::join((static fn () => yield from ['a', 'b'])(), B::grey(' | '))));
+	}
+
 	public function testContentTypes(): void {
 		$stringable = new class () implements Stringable {
 			public function __toString(): string {

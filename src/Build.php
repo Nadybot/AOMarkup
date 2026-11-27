@@ -341,6 +341,32 @@ final class Build {
 		return new TextBuilder(...$content);
 	}
 
+	/**
+	 * The parts with $separator between them, and $last (if given) between the last two:
+	 * join([B::strong('a'), B::strong('b'), B::strong('c')], last: ' and ') is "a, b and c".
+	 * null parts are skipped.
+	 *
+	 * @param iterable<null|string|int|float|Stringable|InlineContent> $parts
+	 */
+	public static function join(
+		iterable $parts,
+		null|string|int|float|Stringable|InlineContent $separator=', ',
+		null|string|int|float|Stringable|InlineContent $last=null,
+	): TextBuilder {
+		$parts = array_values(array_filter(
+			is_array($parts) ? $parts : iterator_to_array($parts, false),
+			static fn (mixed $part): bool => $part !== null,
+		));
+		$content = [];
+		foreach ($parts as $i => $part) {
+			if ($i > 0) {
+				$content[] = ($i === count($parts) - 1 && $last !== null) ? $last : $separator;
+			}
+			$content[] = $part;
+		}
+		return new TextBuilder(...$content);
+	}
+
 	public static function br(): LineBreak {
 		return new LineBreak();
 	}

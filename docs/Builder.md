@@ -58,6 +58,7 @@ use AO\Markup\Build as B;
 | Builder | Creates |
 |---|---|
 | `B::text(…)` | a sequence of inline content |
+| `B::join($parts, separator: ', ', last: null)` | the parts with `$separator` between them and `$last` (if given) between the last two; `null` parts are skipped |
 | `B::br()` | `<br/>` |
 | `B::strong(…)`, `B::u(…)`, `B::i(…)`, `B::match(…)`, `B::selected(…)`, `B::syntax(…)` | the style |
 | `B::green(…)`, `B::neutral(…)`, `B::header2(…)`, … | colour styles; `B::style('clan', …)` by name (an unknown name gives the content unstyled) |
