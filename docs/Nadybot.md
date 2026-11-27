@@ -59,61 +59,23 @@ from the item database setting, and the logger; and a `WidgetRegistry` that modu
 their own widgets to.
 
 ## Module side: how to write a Document
-Three ways, they can be mixed.
-
-### 1. AoXML with escaped arguments
-Closest to today's strings; arguments are escaped like in a prepared statement, so text from
-the database or other bots never breaks the document:
+Modules build documents with the library's builder (`docs/Builder.md`):
 
 ```php
-$context->reply($this->markup->format(
-	'No one matching <strong>%s</strong> is currently banned from this bot.',
-	$search
-));
-```
-
-### 2. AoXML as a template
-For larger windows, a heredoc with an escape helper `$e`:
-
-```php
-$sections = '';
+$window = B::window("Banlist ({$count})");
 foreach ($banlist as $ban) {
-	$sections .= <<<AOXML
-		<section title="{$e($ban->name)}">
-			<dl>
-				<dt>By</dt><dd>{$e($ban->admin)}</dd>
-				<dt>Reason</dt><dd>{$e($ban->reason)}</dd>
-			</dl>
-		</section>
-		AOXML;
+	$window->add(B::section($ban->name)->add(
+		B::dl()->addField('By', $ban->admin)->addField('Reason', $ban->reason ?: null)
+	));
 }
-$context->reply($this->markup->parse(
-	"<popup window=\"bans\">Banlist ({$count})</popup><window id=\"bans\" title=\"Banlist ({$count})\">{$sections}</window>"
-));
+$context->reply($window->asMessage());
 ```
 
-Easy to read, but forgetting `$e()` is easy, too.
-
-### 3. Builder
-Escaping cannot be forgotten, and the IDE completes everything:
+For one-liners, AoXML with escaped arguments may be shorter (to decide, see `docs/Builder.md`):
 
 ```php
-$window = Build::window("Banlist ({$count})");
-foreach ($banlist as $ban) {
-	$window->section($ban->name)->fields([
-		'Date'     => isset($ban->time) ? Util::date($ban->time) : null,   // null: field left out
-		'By'       => $ban->admin,
-		'Ban ends' => $ban->banend ? Util::unixtimeToReadable($ban->banend - time(), false) : 'Never',
-		'Reason'   => $ban->reason ?: null,
-	]);
-}
-$context->reply($window->asPopup());   // a message that is only the popup link
+$context->reply($this->markup->format('No one matching <strong>%s</strong> is banned.', $search));
 ```
-
-Inline content: strings are text, nodes are markup, e.g.
-`Build::text('Joined: ', Build::strong($name), ' (', Build::char($name), ')')`;
-`Build::cmd('help syntax')`, `Build::item(low: 1, high: 2, ql: 3, name: 'Kit')`,
-`Build::table(header: [...], rows: [...])`.
 
 ## Migration
 1. Sinks first: `reply()`, `sendTell()`, `sendPrivate()`, `sendGuild()`, `RoutableMessage`
@@ -131,5 +93,5 @@ Inline content: strings are text, nodes are markup, e.g.
   `$permanentHeader` becomes `<repeat>` or the header row of a table.
 
 ## Questions
-1. **Writing documents:** builder, AoXML with `format()`, or both? (Proposal: both; `format()`
-   for one-liners, the builder for windows.)
+1. **Writing documents:** the builder is decided (`docs/Builder.md`); is `format()` with
+   escaped arguments wanted for one-liners as well?
