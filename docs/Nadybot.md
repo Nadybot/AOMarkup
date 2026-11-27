@@ -68,7 +68,7 @@ foreach ($banlist as $ban) {
 		B::dl()->addField('By', $ban->admin)->addField('Reason', $ban->reason ?: null)
 	));
 }
-$context->reply($window->asMessage());
+$context->reply($window->asDocument());
 ```
 
 For one-liners, AoXML with escaped arguments may be shorter (to decide, see `docs/Builder.md`):

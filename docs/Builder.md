@@ -1,6 +1,8 @@
 # Builder API (draft)
 
-`AO\Markup\Build` (used as `B` below) builds documents in code. Nothing here is built yet.
+`AO\Markup\Build` (used as `B` below) builds documents in code; the builders it returns
+(`TableBuilder`, `WindowBuilder`, …) are in `AO\Markup\Builder`. Nothing here is built yet.
+`Build::table()` reads as what it does; `B` is just a short alias.
 
 ```php
 use AO\Markup\Build as B;
@@ -57,13 +59,21 @@ use AO\Markup\Build as B;
 | `B::img('rdb:123')` | `<img/>` |
 | `B::myname()`, `B::myguild()`, `B::symbol()`, `B::var($name)` | placeholders |
 | `B::unavailable()`, `B::param(…)` | the widgets |
+| `B::datetime($when, $else = null)`, `B::date(…)`, `B::time(…)` | `<datetime/>`, `<date/>`, `<time/>`; `$when` is a Unix time or a `DateTimeInterface`. If it is `null` or `0`, `$else` is used instead (e.g. `'Never'`) and no element is made |
+| `B::duration($seconds, $else = null)` | `<duration/>`, with the same fallback |
+
+`B::count($n, $singular, $plural = null)` is not an element but a string: `B::count(1, 'ban')`
+is `1 ban`, `B::count(2, 'ban')` is `2 bans` (`$plural` defaults to `$singular` + `s`).
+Translations (gettext, ICU plural rules) are the bot's business, not the markup's.
 
 ## Messages and windows
 - `$window->link(…)` is the `<popup>` that opens the window; without content its title is the
   link text.
-- `B::message(…)` is a document: its content is the message, the windows of all `link()`s in it
-  are added automatically.
-- `$window->asMessage()` is short for `B::message($window->link())`, the usual reply.
+- `B::document(…)` is a document: its content is the message, the windows of all `link()`s in
+  it are added automatically.
+- `$window->asDocument(link: null)` is short for `B::document($window->link(…))`, the usual
+  reply: a message that is only the link. Without `link`, the window title is the link text,
+  like `Text::makeBlob()` does today.
 
 ## Examples
 ```php
@@ -73,15 +83,16 @@ foreach ($banlist as $ban) {
 	$window->add(
 		B::section($ban->name)->add(
 			B::dl()
-				->addField('Date', isset($ban->time) ? Util::date($ban->time) : null)
+				->addField('Date', B::datetime($ban->time))
 				->addField('By', $ban->admin)
-				->addField('Ban ends', $ban->banend ? Util::unixtimeToReadable($ban->banend - time(), false) : 'Never')
+				->addField('Ban ends', B::datetime($ban->banend, 'Never'))
+				->addField('Ends in', $ban->banend ? B::duration($ban->banend - time()) : null)
 				->addField('Reason', $ban->reason ?: null)
 		),
 		B::pagebreak()
 	);
 }
-$context->reply($window->asMessage());
+$context->reply($window->asDocument());
 
 // the same field, long form
 B::dl()->add(B::dt('Attack')->add(B::dd('1.2', unit: 'second(s)')));
@@ -104,12 +115,12 @@ foreach ($history->data as $e) {
 $context->reply(
 	B::window("History of {$name} for {$dimension}")
 		->add($table, B::footer('History provided by Auno.org, Chrisax, and Athen Paladins'))
-		->asMessage()
+		->asDocument()
 );
 
 // a message with text around the link
 $bans = B::window('Bans')->add(/* … */);
-$context->reply(B::message('There are ', $bans->link(B::strong($count), ' bans'), '.'));
+$context->reply(B::document('There are ', $bans->link(B::strong(B::count($count, 'ban'))), '.'));
 
 // !settings: a choice
 $choice = B::choice("settings save {$setting->name}");
@@ -120,6 +131,6 @@ $window->add(B::section('Predefined Options')->add($choice));
 ```
 
 ## Open
-- `B::message()` with windows that are not linked from the message (allowed in the tree).
+- `B::document()` with windows that are not linked from the message (allowed in the tree).
 - Whether to add `B::aoxml('…')` for a piece of AoXML inside a builder, and `format()` with
   escaped arguments for one-liners (see `docs/Nadybot.md`).
