@@ -62,7 +62,7 @@ Read first: `docs/AoXML.md`, `docs/Architecture.md`, `tests/Samples/README.md`
   `fallback()` that returns core nodes only; native renderers per exporter are optional.
 - The `expected.*` files in `tests/Samples` are the specification. Change them first,
   then make the code follow.
-- PHP `>=8.1.17` (no readonly classes), no I/O, errors as PSR-3 warnings instead of exceptions.
+- PHP `>=8.3` (Nadybot will move to 8.3 as well), no I/O, errors as PSR-3 warnings instead of exceptions.
 - Exporters return UTF-8. The game client shows Latin-1 only; converting is the job of the
   transport (e.g. aolib), not of the markup. Only layout cares: `TextMetric::canDisplay()` lets
   widgets avoid characters a target cannot show (the slider uses `|` instead of `│` in AOML).

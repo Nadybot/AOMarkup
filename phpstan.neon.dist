@@ -5,7 +5,7 @@ parameters:
     - tests
   parallel:
     maximumNumberOfProcesses: 6
-  phpVersion: 80100
+  phpVersion: 80300
   ignoreErrors:
     # Constructor properties of stubs that are not implemented yet; remove once they are
     -

@@ -17,7 +17,7 @@
   ],
   "type": "library",
   "require": {
-    "php": ">=8.1.17",
+    "php": ">=8.3",
     "ext-mbstring": "*",
     "thecodingmachine/safe": "^2.0|^3.0",
     "psr/log": "^1|^2|^3"
